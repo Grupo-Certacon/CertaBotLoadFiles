@@ -5,6 +5,7 @@ import br.com.certacon.certabotloadfiles.dto.LoadFilesDto;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
 import br.com.certacon.certabotloadfiles.service.LoadFilesService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -166,5 +167,10 @@ public class LoadFilesServiceTest {
         loadFilesModel.setServer("http://192.168.0.62/tributario");
         loadFilesModel.setFolder("CertaconWeb");
         loadFilesModel.setUpdatedAt(new Date());
+    }
+
+    @AfterEach
+    void tearDown() {
+        loadFilesService = null;
     }
 }
