@@ -47,10 +47,12 @@ public class LoadFilesService {
         Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(loadFilesDto.getId().longValue());
         if(!optionalModel.isEmpty()) {
             model = optionalModel.get();
-            model.setFolder(model.getFolder());
+            model.setServerFolder(model.getServerFolder());
+            model.setCnpjFolder(model.getCnpjFolder());
+            model.setYearFolder(model.getYearFolder());
+            model.setPath(model.getPath());
             model.setUpdatedAt(new Date());
             model.setCreatedAt(model.getCreatedAt());
-            model.setServer(model.getServer());
             model.setId(model.getId());
             loadFilesRepository.save(model);
             return model;
