@@ -1,0 +1,16 @@
+server:
+  port: 8095
+  servlet:
+    context-path: /LoadFile
+
+spring:
+  application:
+    name: LoadFile
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:sqlserver://192.168.0.61;databaseName=LoadFile;encrypt=false;integratedSecurity=false;
+    username: giovanni.andrade
+    password: gigi1704
