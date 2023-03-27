@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -34,7 +35,7 @@ public class LoadFilesController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<LoadFilesModel>> getById(@PathVariable Long id) {
+    public ResponseEntity<Optional<LoadFilesModel>> getById(@PathVariable UUID id) {
         Optional<LoadFilesModel> model = loadFilesService.getOneFolder(id);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
@@ -46,7 +47,7 @@ public class LoadFilesController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
+    public ResponseEntity<Boolean> delete(@PathVariable UUID id) {
         Boolean model = loadFilesService.deleteFolder(id);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
