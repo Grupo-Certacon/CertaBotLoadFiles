@@ -3,11 +3,13 @@ package br.com.certacon.certabotloadfiles.service;
 import br.com.certacon.certabotloadfiles.dto.LoadFilesDto;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
+import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class LoadFilesService {
@@ -20,6 +22,7 @@ public class LoadFilesService {
     public LoadFilesModel create(LoadFilesModel loadFilesModel) {
         LoadFilesModel model;
         if(loadFilesModel != null){
+            loadFilesModel.setStatus(StatusFile.CREATED);
             loadFilesModel.setCreatedAt(new Date());
             model = loadFilesRepository.save(loadFilesModel);
         }else{
@@ -28,7 +31,7 @@ public class LoadFilesService {
         return model;
     }
 
-    public Optional<LoadFilesModel> getOneFolder(Long id) {
+    public Optional<LoadFilesModel> getOneFolder(UUID id) {
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
         if(model.isEmpty()) throw new RuntimeException("Pasta não existe");
 
@@ -44,7 +47,7 @@ public class LoadFilesService {
 
     public LoadFilesModel updateFolder(LoadFilesDto loadFilesDto) {
         LoadFilesModel model;
-        Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(loadFilesDto.getId().longValue());
+        Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(loadFilesDto.getId());
         if(!optionalModel.isEmpty()) {
             model = optionalModel.get();
             model.setServerFolder(model.getServerFolder());
@@ -54,6 +57,7 @@ public class LoadFilesService {
             model.setUpdatedAt(new Date());
             model.setCreatedAt(model.getCreatedAt());
             model.setId(model.getId());
+            model.setStatus(StatusFile.UPDATED);
             loadFilesRepository.save(model);
             return model;
         }else{
@@ -61,7 +65,7 @@ public class LoadFilesService {
         }
     }
 
-    public Boolean deleteFolder(Long id) {
+    public Boolean deleteFolder(UUID id) {
         Boolean isDeleted = Boolean.FALSE;
         try{
             Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(id);
