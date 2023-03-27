@@ -46,14 +46,16 @@ public class LoadFilesControllerTest {
         mockMvc.perform(
                 post("/load/config")
                         .param("id", loadFilesModel.getId().toString())
-                        .param("folder", loadFilesModel.getFolder())
-                        .param("server", loadFilesModel.getServer())
+                        .param("serverFolder", loadFilesModel.getServerFolder())
+                        .param("cnpjFolder", loadFilesModel.getCnpjFolder())
+                        .param("yearFolder", loadFilesModel.getYearFolder())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loadFilesModel))
         ).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(loadFilesModel.getId().toString()))
-                .andExpect(jsonPath("$.folder").value(loadFilesModel.getFolder()))
-                .andExpect(jsonPath("$.server").value(loadFilesModel.getServer()));
+                .andExpect(jsonPath("$.id").value(loadFilesModel.getId()))
+                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().create(any(LoadFilesModel.class));
     }
     @Test
@@ -65,30 +67,33 @@ public class LoadFilesControllerTest {
         mockMvc.perform(
                 get("/load/config")
                         .param("id", loadFilesModel.getId().toString())
-                        .param("folder", loadFilesModel.getFolder())
-                        .param("server", loadFilesModel.getServer())
+                        .param("serverFolder", loadFilesModel.getServerFolder())
+                        .param("cnpjFolder", loadFilesModel.getCnpjFolder())
+                        .param("yearFolder", loadFilesModel.getYearFolder())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loadFilesModel))
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(loadFilesModel.getId().toString()))
-                .andExpect(jsonPath("$[0].folder").value(loadFilesModel.getFolder()))
-                .andExpect(jsonPath("$[0].server").value(loadFilesModel.getServer()));
+                .andExpect(jsonPath("$[0].serverFolder").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$[0].cnpjFolder").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$[0].yearFolder").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().getAllFolders();
     }
     @Test
     @DisplayName("chamar o metodo GetById quando Retornar com Sucesso")
     void shouldCallLoadFilesServiceWhenGetByIdReturnWithSuccess() throws Exception {
         //Given
-        BDDMockito.given(loadFilesService.getOneFolder(any(Long.class))).willReturn(Optional.of(loadFilesModel));
+        BDDMockito.given(loadFilesService.getOneFolder(any(UUID.class))).willReturn(Optional.of(loadFilesModel));
         //When/Then
         mockMvc.perform(
                 get("/load/config/{id}", loadFilesModel.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(loadFilesModel.getId()))
-                .andExpect(jsonPath("$.folder").value(loadFilesModel.getFolder()))
-                .andExpect(jsonPath("$.server").value(loadFilesModel.getServer()));
-        then(loadFilesService).should().getOneFolder(any(Long.class));
+                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
+        then(loadFilesService).should().getOneFolder(any(UUID.class));
     }
 
     @Test
@@ -96,7 +101,7 @@ public class LoadFilesControllerTest {
     void shouldCallLoadFilesServiceWhenUpdateReturnWithSuccess() throws Exception {
         //Given
         LoadFilesDto loadFilesDto = LoadFilesDto.builder()
-                .id(loadFilesModel.getId().longValue())
+                .id(loadFilesModel.getId())
                 .build();
         BDDMockito.given(loadFilesService.updateFolder(any(LoadFilesDto.class))).willReturn(loadFilesModel);
         //When/Then
@@ -106,8 +111,9 @@ public class LoadFilesControllerTest {
                         .content(objectMapper.writeValueAsString(loadFilesDto))
         ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(loadFilesModel.getId()))
-                .andExpect(jsonPath("$.folder").value(loadFilesModel.getFolder()))
-                .andExpect(jsonPath("$.server").value(loadFilesModel.getServer()));
+                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().updateFolder(any(LoadFilesDto.class));
     }
 
@@ -115,22 +121,24 @@ public class LoadFilesControllerTest {
     @DisplayName("chamar o metodo delete quando Retornar com Sucesso")
     void shouldCallLoadFilesServiceWhenDeleteReturnWithSuccess() throws Exception {
         //Given
-        BDDMockito.given(loadFilesService.deleteFolder(any(Long.class))).willReturn(any(Boolean.class));
+        BDDMockito.given(loadFilesService.deleteFolder(any(UUID.class))).willReturn(any(Boolean.class));
         //When/Then
         mockMvc.perform(
                 delete("/load/config/{id}", loadFilesModel.getId())
                         .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk());
-        then(loadFilesService).should().deleteFolder(any(Long.class));
+        then(loadFilesService).should().deleteFolder(any(UUID.class));
     }
 
     @BeforeEach
     void setUp(){
         loadFilesModel = new LoadFilesModel();
-        loadFilesModel.setId(0L);
+        loadFilesModel.setId(UUID.randomUUID());
         loadFilesModel.setCreatedAt(new Date());
-        loadFilesModel.setServer("http://192.168.0.62/tributario");
-        loadFilesModel.setFolder("CertaconWeb");
+        loadFilesModel.setServerFolder("192.168.0.62");
+        loadFilesModel.setCnpjFolder("1928321231");
+        loadFilesModel.setYearFolder("2004");
+        loadFilesModel.setPath("/Home/Selenium/Downloads");
         loadFilesModel.setUpdatedAt(new Date());
     }
 }
