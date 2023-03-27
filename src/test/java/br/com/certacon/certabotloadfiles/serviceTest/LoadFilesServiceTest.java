@@ -14,10 +14,7 @@ import org.mockito.BDDMockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,8 +58,8 @@ public class LoadFilesServiceTest {
         //Given
         Optional<LoadFilesModel> expected = Optional.of(new LoadFilesModel());
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(expected);
-        Optional<LoadFilesModel> actual = loadFilesService.getOneFolder(any(Long.class));
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(expected);
+        Optional<LoadFilesModel> actual = loadFilesService.getOneFolder(any(UUID.class));
         //Then
         assertEquals(expected, actual);
     }
@@ -72,7 +69,7 @@ public class LoadFilesServiceTest {
         //Given
         Exception expected = new RuntimeException("Pasta não existe");
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(null);
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(null);
         Exception actual = assertThrows(RuntimeException.class, () -> loadFilesService.getOneFolder(null));
         //Then
         assertEquals(expected.getMessage(), actual.getMessage());
@@ -108,13 +105,15 @@ public class LoadFilesServiceTest {
         LoadFilesDto loadFilesDto = LoadFilesDto.builder()
                 .id(loadFilesModel.getId())
                 .updatedAt(loadFilesModel.getCreatedAt())
-                .folder(loadFilesModel.getFolder())
-                .server(loadFilesModel.getServer())
+                .path(loadFilesModel.getPath())
+                .serverFolder(loadFilesModel.getServerFolder())
+                .cnpjFolder(loadFilesModel.getCnpjFolder())
+                .yearFolder(loadFilesModel.getYearFolder())
                 .build();
         Optional<LoadFilesModel> optionalModel = Optional.of(new LoadFilesModel());
         LoadFilesModel expected = new LoadFilesModel();
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(optionalModel);
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(optionalModel);
         BDDMockito.when(loadFilesRepository.save(any(LoadFilesModel.class))).thenReturn(expected);
         LoadFilesModel actual = loadFilesService.updateFolder(loadFilesDto);
         //Then
@@ -128,11 +127,13 @@ public class LoadFilesServiceTest {
         LoadFilesDto loadFilesDto = LoadFilesDto.builder()
                 .id(loadFilesModel.getId())
                 .updatedAt(loadFilesModel.getCreatedAt())
-                .folder(loadFilesModel.getFolder())
-                .server(loadFilesModel.getServer())
+                .cnpjFolder(loadFilesModel.getCnpjFolder())
+                .serverFolder(loadFilesModel.getServerFolder())
+                .yearFolder(loadFilesModel.getYearFolder())
+                .path(loadFilesModel.getPath())
                 .build();
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
         BDDMockito.when(loadFilesRepository.save(any(LoadFilesModel.class))).thenReturn(null);
         Exception actual = assertThrows(RuntimeException.class, () -> loadFilesService.updateFolder(loadFilesDto));
         //Then
@@ -143,7 +144,7 @@ public class LoadFilesServiceTest {
     @DisplayName("chamar o metodo deleteFolder quando retornar com verdadeiro")
     void shouldCallLoadFilesServiceWhenDeleteFolderReturnWithTrue() {
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(Optional.of(loadFilesModel));
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(loadFilesModel));
         Boolean actual = loadFilesService.deleteFolder(loadFilesModel.getId());
         //Then
         assertTrue(actual);
@@ -152,20 +153,21 @@ public class LoadFilesServiceTest {
     @DisplayName("chamar o metodo deleteFolder quando retornar com False")
     void shouldCallLoadFilesServiceWhenDeleteFolderReturnWithFalse() {
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
         Boolean actual = loadFilesService.deleteFolder(loadFilesModel.getId());
         //Then
         assertFalse(actual);
     }
 
-
     @BeforeEach
     void setUp(){
         loadFilesService = new LoadFilesService(loadFilesRepository);
-        loadFilesModel.setId(0L);
+        loadFilesModel.setId(UUID.randomUUID());
         loadFilesModel.setCreatedAt(new Date());
-        loadFilesModel.setServer("http://192.168.0.62/tributario");
-        loadFilesModel.setFolder("CertaconWeb");
+        loadFilesModel.setServerFolder("192.168.0.62");
+        loadFilesModel.setCnpjFolder("1928321231");
+        loadFilesModel.setYearFolder("2004");
+        loadFilesModel.setPath("/Home/Selenium/Downloads");
         loadFilesModel.setUpdatedAt(new Date());
     }
 
