@@ -14,3 +14,6 @@ spring:
     url: jdbc:sqlserver://192.168.0.61;databaseName=LoadFile;encrypt=false;integratedSecurity=false;
     username: giovanni.andrade
     password: gigi1704
+
+config:
+  rootPath: D:\loadFileData\
