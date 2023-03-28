@@ -1,6 +1,6 @@
 package br.com.certacon.certabotloadfiles.dto;
 
-import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
+import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -13,10 +13,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 public class LoadFilesDto {
-    @JsonProperty(value = "file_id")
+    @JsonProperty(value = "load_file_id")
     private UUID id;
 
-    @JsonProperty(value = "pasta", required = true)
+    @JsonProperty(value = "pasta_servidor", required = true)
     private String serverFolder;
 
     @JsonProperty(value = "pasta_cnpj", required = true)
@@ -27,6 +27,9 @@ public class LoadFilesDto {
 
     @JsonProperty(value = "caminho")
     private String path;
+
+    @JsonProperty(value = "status")
+    private StatusFile status;
 
     @JsonProperty(value = "criado_em", required = true)
     private Date createdAt;
