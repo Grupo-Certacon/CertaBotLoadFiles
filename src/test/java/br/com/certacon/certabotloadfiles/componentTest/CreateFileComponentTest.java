@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -26,9 +25,7 @@ public class CreateFileComponentTest {
     @MockBean
     UserFilesRepository userFilesRepository;
     @Autowired
-    private CreateFileComponent createFileComponent;
-    @Value("${config.rootPath}")
-    private String rootPath;
+    CreateFileComponent createFileComponent;
 
     @Test
     @DisplayName("chamar o componente createFile quando Retornar com Falso")
@@ -36,14 +33,13 @@ public class CreateFileComponentTest {
         //Given
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
-                .path("192168062\\1273821329\\2021\\")
-                .fileName("SpedEFD-43408590000107-669068365110-Remessa de arquivo original-abr2022.txt")
+                .path("D:\\loadFileData\\1921680512\\1234569874323\\2020")
                 .build();
         //When
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
-        BDDMockito.when(userFilesRepository.findByFileNameAndPath(any(String.class), any(String.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
-        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getFileName());
+        BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.of(userModel));
+        Boolean actual = createFileComponent.checkFile(userModel.getPath());
         //Then
         assertFalse(actual);
     }
@@ -55,19 +51,19 @@ public class CreateFileComponentTest {
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
                 .path("192168062\\1273821329\\2021\\")
-                .fileName("NovoArquivoTeste.txt")
                 .build();
         //When
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
-        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getFileName());
+        BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.empty());
+        Boolean actual = createFileComponent.checkFile(userModel.getPath());
         //Then
         assertTrue(actual);
     }
 
     @BeforeEach
     void setUp() {
-        createFileComponent = new CreateFileComponent(rootPath, userFilesRepository);
+        createFileComponent = new CreateFileComponent(userFilesRepository);
     }
 
 }
