@@ -48,16 +48,15 @@ public class LoadFilesControllerTest {
         //When/Then
         mockMvc.perform(
                         post("/load/config")
-                                .param("id", loadFilesModel.getId().toString())
-                                .param("serverFolder", loadFilesModel.getServerFolder())
-                                .param("cnpjFolder", loadFilesModel.getCnpjFolder())
-                                .param("yearFolder", loadFilesModel.getYearFolder())
+                                .param("pasta_servidor", loadFilesModel.getServerFolder())
+                                .param("pasta_cnpj", loadFilesModel.getCnpjFolder())
+                                .param("pasta_ano", loadFilesModel.getYearFolder())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(loadFilesModel))
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
-                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
-                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
+                .andExpect(jsonPath("$.pasta_servidor").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.pasta_cnpj").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.pasta_ano").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().create(any(LoadFilesModel.class));
     }
 
@@ -69,17 +68,17 @@ public class LoadFilesControllerTest {
         //When/Then
         mockMvc.perform(
                         get("/load/config")
-                                .param("id", loadFilesModel.getId().toString())
-                                .param("serverFolder", loadFilesModel.getServerFolder())
-                                .param("cnpjFolder", loadFilesModel.getCnpjFolder())
-                                .param("yearFolder", loadFilesModel.getYearFolder())
+                                .param("load_file_id", loadFilesModel.getId().toString())
+                                .param("pasta_servidor", loadFilesModel.getServerFolder())
+                                .param("pasta_cnpj", loadFilesModel.getCnpjFolder())
+                                .param("pasta_ano", loadFilesModel.getYearFolder())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(loadFilesModel))
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(loadFilesModel.getId().toString()))
-                .andExpect(jsonPath("$[0].serverFolder").value(loadFilesModel.getServerFolder()))
-                .andExpect(jsonPath("$[0].cnpjFolder").value(loadFilesModel.getCnpjFolder()))
-                .andExpect(jsonPath("$[0].yearFolder").value(loadFilesModel.getYearFolder()));
+                .andExpect(jsonPath("$[0].load_file_id").value(loadFilesModel.getId().toString()))
+                .andExpect(jsonPath("$[0].pasta_servidor").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$[0].pasta_cnpj").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$[0].pasta_ano").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().getAllFolders();
     }
 
@@ -93,9 +92,9 @@ public class LoadFilesControllerTest {
                         get("/load/config/{id}", loadFilesModel.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
-                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
-                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
+                .andExpect(jsonPath("$.pasta_servidor").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.pasta_cnpj").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.pasta_ano").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().getOneFolder(any(UUID.class));
     }
 
@@ -113,9 +112,9 @@ public class LoadFilesControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(loadFilesDto))
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$.serverFolder").value(loadFilesModel.getServerFolder()))
-                .andExpect(jsonPath("$.cnpjFolder").value(loadFilesModel.getCnpjFolder()))
-                .andExpect(jsonPath("$.yearFolder").value(loadFilesModel.getYearFolder()));
+                .andExpect(jsonPath("$.pasta_servidor").value(loadFilesModel.getServerFolder()))
+                .andExpect(jsonPath("$.pasta_cnpj").value(loadFilesModel.getCnpjFolder()))
+                .andExpect(jsonPath("$.pasta_ano").value(loadFilesModel.getYearFolder()));
         then(loadFilesService).should().updateFolder(any(LoadFilesDto.class));
     }
 
