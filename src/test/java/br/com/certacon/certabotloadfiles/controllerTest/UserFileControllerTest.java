@@ -47,15 +47,15 @@ public class UserFileControllerTest {
         //When/Then
         mockMvc.perform(
                         get("/files/{id}", userFilesModel.getId())
-                                .param("id", userFilesModel.getId().toString())
-                                .param("path", userFilesModel.getPath())
-                                .param("fileName", userFilesModel.getFileName())
+                                .param("user_id", userFilesModel.getId().toString())
+                                .param("caminho", userFilesModel.getPath())
+                                .param("nome_arquivo", userFilesModel.getFileName())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(userFilesModel))
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userFilesModel.getId().toString()))
-                .andExpect(jsonPath("$.path").value(userFilesModel.getPath()))
-                .andExpect(jsonPath("$.fileName").value(userFilesModel.getFileName()));
+                .andExpect(jsonPath("$.user_id").value(userFilesModel.getId().toString()))
+                .andExpect(jsonPath("$.caminho").value(userFilesModel.getPath()))
+                .andExpect(jsonPath("$.nome_arquivo").value(userFilesModel.getFileName()));
         then(userFilesService).should().getById(any(UUID.class));
     }
 
@@ -67,15 +67,15 @@ public class UserFileControllerTest {
         //When/Then
         mockMvc.perform(
                         get("/files")
-                                .param("id", userFilesModel.getId().toString())
-                                .param("path", userFilesModel.getPath())
-                                .param("fileName", userFilesModel.getFileName())
+                                .param("user_id", userFilesModel.getId().toString())
+                                .param("caminho", userFilesModel.getPath())
+                                .param("nome_arquivo", userFilesModel.getFileName())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(userFilesModel))
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(userFilesModel.getId().toString()))
-                .andExpect(jsonPath("$[0].path").value(userFilesModel.getPath()))
-                .andExpect(jsonPath("$[0].fileName").value(userFilesModel.getFileName()));
+                .andExpect(jsonPath("$[0].user_id").value(userFilesModel.getId().toString()))
+                .andExpect(jsonPath("$[0].caminho").value(userFilesModel.getPath()))
+                .andExpect(jsonPath("$[0].nome_arquivo").value(userFilesModel.getFileName()));
         then(userFilesService).should().getAll();
     }
 
