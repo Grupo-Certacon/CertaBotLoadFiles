@@ -3,6 +3,7 @@ package br.com.certacon.certabotloadfiles.model;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -15,7 +16,8 @@ import java.util.UUID;
 @Builder
 public class LoadFilesModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GenericGenerator(name = "UUIDGenerator", strategy = "uuid2")
+    @GeneratedValue(generator = "UUIDGenerator")
     @Column(name = "load_file_id")
     private UUID id;
 
