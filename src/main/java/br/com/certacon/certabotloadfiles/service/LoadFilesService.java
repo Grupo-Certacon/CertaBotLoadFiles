@@ -21,11 +21,11 @@ public class LoadFilesService {
 
     public LoadFilesModel create(LoadFilesModel loadFilesModel) {
         LoadFilesModel model;
-        if(loadFilesModel != null){
+        if (loadFilesModel != null) {
             loadFilesModel.setStatus(StatusFile.CREATED);
             loadFilesModel.setCreatedAt(new Date());
             model = loadFilesRepository.save(loadFilesModel);
-        }else{
+        } else {
             throw new RuntimeException("Objeto não pode ser nulo");
         }
         return model;
@@ -33,14 +33,14 @@ public class LoadFilesService {
 
     public Optional<LoadFilesModel> getOneFolder(UUID id) {
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
-        if(model.isEmpty()) throw new RuntimeException("Pasta não existe");
+        if (model.isEmpty()) throw new RuntimeException("Pasta não existe");
 
         return model;
     }
 
     public List<LoadFilesModel> getAllFolders() {
         List<LoadFilesModel> modelList = loadFilesRepository.findAll();
-        if(modelList == null) throw new RuntimeException("Pasta(s) não encontradas");
+        if (modelList == null) throw new RuntimeException("Pasta(s) não encontradas");
 
         return modelList;
     }
@@ -48,7 +48,7 @@ public class LoadFilesService {
     public LoadFilesModel updateFolder(LoadFilesDto loadFilesDto) {
         LoadFilesModel model;
         Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(loadFilesDto.getId());
-        if(!optionalModel.isEmpty()) {
+        if (!optionalModel.isEmpty()) {
             model = optionalModel.get();
             model.setServerFolder(model.getServerFolder());
             model.setCnpjFolder(model.getCnpjFolder());
@@ -60,25 +60,25 @@ public class LoadFilesService {
             model.setStatus(StatusFile.UPDATED);
             loadFilesRepository.save(model);
             return model;
-        }else{
+        } else {
             throw new RuntimeException("Folder não encontrado");
         }
     }
 
     public Boolean deleteFolder(UUID id) {
         Boolean isDeleted = Boolean.FALSE;
-        try{
+        try {
             Optional<LoadFilesModel> optionalModel = loadFilesRepository.findById(id);
-            if (optionalModel.isEmpty()){
+            if (optionalModel.isEmpty()) {
                 throw new RuntimeException("Folder não encontrado");
-            } else{
+            } else {
                 isDeleted = Boolean.TRUE;
                 loadFilesRepository.delete(optionalModel.get());
             }
 
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage());
-        }finally {
+        } finally {
             return isDeleted;
         }
     }
