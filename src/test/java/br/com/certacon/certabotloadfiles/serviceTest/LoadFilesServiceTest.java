@@ -26,7 +26,7 @@ public class LoadFilesServiceTest {
     LoadFilesService loadFilesService;
     @MockBean
     LoadFilesRepository loadFilesRepository;
-    @MockBean
+
     LoadFilesModel loadFilesModel;
 
     @Test
@@ -54,18 +54,24 @@ public class LoadFilesServiceTest {
 
     @Test
     @DisplayName("chamar o metodo getOneFolder Quando retornar com Sucesso")
-    void shouldCallLoadFilesServiceWhenGetOneFolderReturnWithSuccess(){
+    void shouldCallLoadFilesServiceWhenGetOneFolderReturnWithSuccess() {
         //Given
-        Optional<LoadFilesModel> expected = Optional.of(new LoadFilesModel());
+        Optional<LoadFilesModel> expected = Optional.of(LoadFilesModel.builder()
+                .id(UUID.randomUUID())
+                .yearFolder("2021")
+                .cnpjFolder("123.2.14.111.2")
+                .serverFolder("162.345.0.13")
+                .build());
         //When
         BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(expected);
-        Optional<LoadFilesModel> actual = loadFilesService.getOneFolder(any(UUID.class));
+        Optional<LoadFilesModel> actual = loadFilesService.getOneFolder(expected.get().getId());
         //Then
         assertEquals(expected, actual);
     }
+
     @Test
     @DisplayName("chamar o metodo getOneFolder Quando retornar com Falha")
-    void shouldCallLoadFilesServiceWhenGetOneFolderReturnWithFail(){
+    void shouldCallLoadFilesServiceWhenGetOneFolderReturnWithFail() {
         //Given
         Exception expected = new RuntimeException("Pasta não existe");
         //When
@@ -86,6 +92,7 @@ public class LoadFilesServiceTest {
         //Then
         assertEquals(expected, actual);
     }
+
     @Test
     @DisplayName("chamar o metodo getAllFolders Quando retornar com Falha")
     void shouldCallLoadFilesServiceWhenGetAllFoldersReturnWithFail() {
@@ -100,7 +107,7 @@ public class LoadFilesServiceTest {
 
     @Test
     @DisplayName("chamar o metodo UpdateFolder quando Retornar com Sucesso")
-    void shouldCallLoadFilesServiceWhenUpdateFolderReturnWithSuccess(){
+    void shouldCallLoadFilesServiceWhenUpdateFolderReturnWithSuccess() {
         //Given
         LoadFilesDto loadFilesDto = LoadFilesDto.builder()
                 .id(loadFilesModel.getId())
@@ -110,8 +117,8 @@ public class LoadFilesServiceTest {
                 .cnpjFolder(loadFilesModel.getCnpjFolder())
                 .yearFolder(loadFilesModel.getYearFolder())
                 .build();
-        Optional<LoadFilesModel> optionalModel = Optional.of(new LoadFilesModel());
         LoadFilesModel expected = new LoadFilesModel();
+        Optional<LoadFilesModel> optionalModel = Optional.of(expected);
         //When
         BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(optionalModel);
         BDDMockito.when(loadFilesRepository.save(any(LoadFilesModel.class))).thenReturn(expected);
@@ -119,9 +126,10 @@ public class LoadFilesServiceTest {
         //Then
         assertEquals(expected.getId(), actual.getId());
     }
+
     @Test
     @DisplayName("chamar o metodo UpdateFolder quando Retornar com Falha")
-    void shouldCallLoadFilesServiceWhenUpdateFolderReturnWithFail(){
+    void shouldCallLoadFilesServiceWhenUpdateFolderReturnWithFail() {
         //Given
         Exception expected = new RuntimeException("Folder não encontrado");
         LoadFilesDto loadFilesDto = LoadFilesDto.builder()
@@ -143,12 +151,14 @@ public class LoadFilesServiceTest {
     @Test
     @DisplayName("chamar o metodo deleteFolder quando retornar com verdadeiro")
     void shouldCallLoadFilesServiceWhenDeleteFolderReturnWithTrue() {
+        Optional<LoadFilesModel> result = Optional.of(loadFilesModel);
         //When
-        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(loadFilesModel));
+        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(result);
         Boolean actual = loadFilesService.deleteFolder(loadFilesModel.getId());
         //Then
         assertTrue(actual);
     }
+
     @Test
     @DisplayName("chamar o metodo deleteFolder quando retornar com False")
     void shouldCallLoadFilesServiceWhenDeleteFolderReturnWithFalse() {
@@ -160,8 +170,9 @@ public class LoadFilesServiceTest {
     }
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         loadFilesService = new LoadFilesService(loadFilesRepository);
+        loadFilesModel = new LoadFilesModel();
         loadFilesModel.setId(UUID.randomUUID());
         loadFilesModel.setCreatedAt(new Date());
         loadFilesModel.setServerFolder("192.168.0.62");
