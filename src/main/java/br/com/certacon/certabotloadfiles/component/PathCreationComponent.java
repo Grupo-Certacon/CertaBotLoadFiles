@@ -17,7 +17,7 @@ public class PathCreationComponent {
     @Value("${config.rootPath}")
     private String rootPath;
 
-    public PathCreationComponent( @Value("${config.rootPath}") String rootPath,LoadFilesRepository loadFilesRepository) {
+    public PathCreationComponent(@Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
         this.loadFilesRepository = loadFilesRepository;
         this.rootPath = rootPath;
     }
@@ -25,24 +25,27 @@ public class PathCreationComponent {
     public Boolean checkPath(UUID id) {
         Boolean isCreated = Boolean.FALSE;
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
+        LoadFilesModel result = model.get();
         try {
             if (model.isPresent()) {
-                String server = model.get().getServerFolder().replaceAll("[^0-9]", "");
-                String cnpj = model.get().getCnpjFolder().replaceAll("[^0-9]", "");
-                String year = model.get().getYearFolder();
+                String server = result.getServerFolder().replaceAll("[^0-9]", "");
+                String cnpj = result.getCnpjFolder().replaceAll("[^0-9]", "");
+                String year = result.getYearFolder();
                 Path serverPath = Paths.get(rootPath + server);
                 Path cnpjPath = Paths.get(serverPath + "\\" + cnpj);
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
+                result.setPath(String.valueOf(yearPath));
                 if (!serverPath.toFile().isDirectory() || !cnpjPath.toFile().isDirectory() || !yearPath.toFile().isDirectory()) {
                     yearPath.toFile().mkdirs();
+                    result.setStatus(StatusFile.CREATED);
                     isCreated = Boolean.TRUE;
-                    return isCreated;
                 }
             }
-        }catch (RuntimeException e){
-            model.get().setStatus(StatusFile.ERROR);
-        }finally {
-            return isCreated;
+        } catch (RuntimeException e) {
+            result.setStatus(StatusFile.ERROR);
+            isCreated = Boolean.FALSE;
         }
+        loadFilesRepository.save(result);
+        return isCreated;
     }
 }
