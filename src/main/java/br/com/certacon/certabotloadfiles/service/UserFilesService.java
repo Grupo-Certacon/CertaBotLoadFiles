@@ -19,16 +19,18 @@ public class UserFilesService {
 
     public UserFilesModel getById(UUID id) {
         Optional<UserFilesModel> model = userFilesRepository.findById(id);
+        UserFilesModel result = new UserFilesModel();
         try {
-            UserFilesModel result = model.get();
+            result = model.get();
             if (model.isPresent()) {
                 result.setStatus(StatusFile.OK);
             }
-            userFilesRepository.save(result);
-            return result;
         } catch (RuntimeException e) {
+            result.setStatus(StatusFile.ERROR);
             throw new RuntimeException("Objeto não encontrado!");
         }
+        userFilesRepository.save(result);
+        return result;
     }
 
     public List<UserFilesModel> getAll() {
