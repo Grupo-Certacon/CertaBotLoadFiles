@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface UserFilesRepository extends JpaRepository<UserFilesModel, UUID> {
-    Optional<UserFilesModel> findByFileNameAndPath(String fileName, String path);
+    Optional<UserFilesModel> findByFileName(String fileName);
 }
