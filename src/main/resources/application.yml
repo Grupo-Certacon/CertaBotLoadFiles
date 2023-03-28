@@ -9,7 +9,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
   datasource:
     url: jdbc:sqlserver://192.168.0.61;databaseName=LoadFile;encrypt=false;integratedSecurity=false;
     username: giovanni.andrade
