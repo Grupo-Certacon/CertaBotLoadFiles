@@ -4,7 +4,6 @@ import br.com.certacon.certabotloadfiles.component.PathCreationComponent;
 import br.com.certacon.certabotloadfiles.configuration.Properties;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,8 +71,4 @@ public class PathCreationComponentTest {
         pathCreationComponent = new PathCreationComponent(rootPath, loadFilesRepository);
     }
 
-    @AfterEach
-    void tearDown() {
-        pathCreationComponent = null;
-    }
 }
