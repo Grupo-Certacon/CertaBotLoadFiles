@@ -20,20 +20,24 @@ public class UserFilesModel {
     @GenericGenerator(name = "UUIDGenerator", strategy = "uuid2")
     @GeneratedValue(generator = "UUIDGenerator")
     @Column(name = "user_id")
+    @JsonProperty(value = "user_id")
     private UUID id;
 
-    @Column(name = "nome_arquivo", nullable = false)
-    @JsonProperty(required = true)
+    @Column(name = "nome_arquivo")
+    @JsonProperty(value = "nome_arquivo")
     private String fileName;
 
     @Column(name = "status")
+    @JsonProperty(value = "status")
     @Enumerated(EnumType.STRING)
     private StatusFile status;
 
     @Column(name = "criado_em")
+    @JsonProperty(value = "criado_em")
     private Date createdAt;
 
-    @Column(name = "caminho", nullable = false)
+    @Column(name = "caminho")
+    @JsonProperty(value = "caminho")
     private String path;
 
 }
