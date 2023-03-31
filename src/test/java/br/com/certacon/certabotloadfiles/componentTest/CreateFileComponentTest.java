@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class CreateFileComponentTest {
 
     @Test
     @DisplayName("chamar o componente createFile quando Retornar com Falso")
-    void shouldCallCreateFileComponentWhenCreateFileReturnWithFalse() {
+    void shouldCallCreateFileComponentWhenCreateFileReturnWithFalse() throws IOException {
         //Given
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
@@ -39,14 +40,14 @@ public class CreateFileComponentTest {
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
         BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.of(userModel));
-        Boolean actual = createFileComponent.checkFile(userModel.getPath());
+        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer());
         //Then
         assertFalse(actual);
     }
 
     @Test
     @DisplayName("chamar o componente createFile quando Retornar com True")
-    void shouldCallCreateFileComponentWhenCreateFileReturnWithTrue() {
+    void shouldCallCreateFileComponentWhenCreateFileReturnWithTrue() throws IOException {
         //Given
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
@@ -56,7 +57,7 @@ public class CreateFileComponentTest {
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
         BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.empty());
-        Boolean actual = createFileComponent.checkFile(userModel.getPath());
+        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer());
         //Then
         assertTrue(actual);
     }
