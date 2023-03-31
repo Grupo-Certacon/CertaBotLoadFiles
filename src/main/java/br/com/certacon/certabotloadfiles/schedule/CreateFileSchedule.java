@@ -7,6 +7,7 @@ import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -19,14 +20,14 @@ public class CreateFileSchedule {
         this.loadFilesRepository = loadFilesRepository;
     }
 
-    @Scheduled(fixedRate = 30000)
-    public boolean createFileScheduled() {
+    @Scheduled(fixedRate = 30000, initialDelay = 45000)
+    public boolean createFileScheduled() throws IOException {
         List<LoadFilesModel> modelList = loadFilesRepository.findAll();
         Boolean check = Boolean.FALSE;
         if (!modelList.isEmpty()) {
             for (int i = 0; i < modelList.size(); i++) {
                 if (modelList.get(i).getStatus() == StatusFile.CREATED || modelList.get(i).getStatus() == StatusFile.UPDATED) {
-                    check = createFileComponent.checkFile(modelList.get(i).getPath());
+                    check = createFileComponent.checkFile(modelList.get(i).getPath(), modelList.get(i).getCnpjFolder(), modelList.get(i).getServerFolder());
                 }
             }
         }
