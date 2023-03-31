@@ -31,6 +31,16 @@ public class UserFilesModel {
     @JsonProperty(value = "status")
     @Enumerated(EnumType.STRING)
     private StatusFile status;
+    @Column(name = "mimeType")
+    @JsonProperty(value = "mimeType")
+    private String mimeType;
+
+    @Column(name = "extension")
+    @JsonProperty(value = "extension")
+    private String extension;
+
+    @Column(name = "process_id")
+    private String processId;
 
     @Column(name = "criado_em")
     @JsonProperty(value = "criado_em")
@@ -39,5 +49,12 @@ public class UserFilesModel {
     @Column(name = "caminho")
     @JsonProperty(value = "caminho")
     private String path;
+    @Column(name = "cnpj")
+    private String cnpj;
 
+    @Column(name = "ip_servidor")
+    private String ipServer;
+
+    @Column(name = "year")
+    private String year;
 }
