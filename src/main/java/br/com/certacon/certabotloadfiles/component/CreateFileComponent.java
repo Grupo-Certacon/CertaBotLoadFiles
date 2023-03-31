@@ -1,20 +1,30 @@
 package br.com.certacon.certabotloadfiles.component;
 
+
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileSystemUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Component
 public class CreateFileComponent {
@@ -25,108 +35,130 @@ public class CreateFileComponent {
         this.userFilesRepository = userFilesRepository;
     }
 
-    public Boolean checkFile(String path) {
-        Boolean isCreated = Boolean.FALSE;
-        UserFilesModel result;
-        try {
-            Path fullPath = Paths.get(path);
-            File[] file = new File(fullPath.toUri()).listFiles();
-            for (int i = 0; i < file.length; i++) {
-                Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(file[i].getName());
-                if (!filePath.isPresent()) {
-                    if (file[i].getName().contains(".zip")) {
-                        File zipFile = new File(file[i].getPath());
-                        String tempDirectoryPath = zipFile.getParentFile().getAbsolutePath();
+    public void extractAndCompress(String inputFilePath, String outputFilePath) throws IOException {
+        // Cria um arquivo temporário para armazenar os arquivos extraídos
+        File tempDir = new File("temp");
+        if (!tempDir.exists()) {
+            tempDir.mkdir();
+        }
 
-                        // Descompacta o arquivo ZIP para o diretório temporário
-                        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile))) {
-                            ZipEntry zipEntry;
-                            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                                String fileName = zipEntry.getName();
-                                File outputFile = new File(tempDirectoryPath + File.separator + fileName);
-                                if (zipEntry.isDirectory()) {
-                                    outputFile.mkdirs();
-                                } else {
-                                    File parent = outputFile.getParentFile();
-                                    if (!parent.exists()) {
-                                        parent.mkdirs();
-                                    }
-                                    FileOutputStream outputStream = new FileOutputStream(outputFile);
-                                    IOUtils.copy(zipInputStream, outputStream);
-                                    outputStream.close();
-                                }
-                                // Check if the extracted file is a ZIP file, and if it is, recursively extract it to the same directory
-                                if (fileName.toLowerCase().endsWith(".zip")) {
-                                    String newZipFilePath = tempDirectoryPath + File.separator + fileName;
-                                    File zipFile1 = new File(newZipFilePath);
-                                    String tempDirectoryPath1 = zipFile1.getParentFile().getAbsolutePath();
+        // Extrai todos os arquivos do arquivo ZIP e adiciona os arquivos e diretórios ao array de arquivos
+        List<File> filesToZip = new ArrayList<>();
+        ZipFile zipFile = new ZipFile(inputFilePath);
+        List<FileHeader> fileHeaders = zipFile.getFileHeaders();
+        for (FileHeader fileHeader : fileHeaders) {
+            if (!fileHeader.isDirectory()) {
+                String fileName = tempDir.getAbsolutePath() + "/" + fileHeader.getFileName();
+                zipFile.extractFile(fileHeader, fileName);
+                filesToZip.add(new File(fileName));
+            }
+        }
 
-                                    try (ZipInputStream zipInputStream1 = new ZipInputStream(new FileInputStream(zipFile1))) {
-                                        ZipEntry zipEntry1;
-                                        while ((zipEntry1 = zipInputStream1.getNextEntry()) != null) {
-                                            String fileName1 = zipEntry1.getName();
-                                            File outputFile1 = new File(tempDirectoryPath1 + File.separator + fileName1);
-                                            if (zipEntry.isDirectory()) {
-                                                outputFile1.mkdirs();
-                                            } else {
-                                                File parent = outputFile1.getParentFile();
-                                                if (!parent.exists()) {
-                                                    parent.mkdirs();
-                                                }
-                                                FileOutputStream outputStream = new FileOutputStream(outputFile);
-                                                IOUtils.copy(zipInputStream1, outputStream);
-                                                outputStream.close();
-                                            }
-                                            // Compacta o conteúdo descompactado em um novo arquivo ZIP
-                                            File tempDirectory = new File(tempDirectoryPath);
-                                            File[] filesToZip = tempDirectory.listFiles();
-                                            String newZipFilePath1 = tempDirectoryPath + File.separator + "newArchive.zip";
-                                            try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(newZipFilePath1))) {
-                                                byte[] buffer = new byte[1024];
-                                                for (File newFile : filesToZip) {
-                                                    if (!newFile.isDirectory()) {
-                                                        ZipEntry zipEntry2 = new ZipEntry(newFile.getName());
-                                                        zipOutputStream.putNextEntry(zipEntry2);
-                                                        FileInputStream inputStream = new FileInputStream(newFile);
-                                                        int len;
-                                                        while ((len = inputStream.read(buffer)) > 0) {
-                                                            zipOutputStream.write(buffer, 0, len);
-                                                        }
-                                                        inputStream.close();
-                                                        zipOutputStream.closeEntry();
-                                                    }
-                                                }
-                                            } catch (IOException e) {
-                                                throw new IOException("Failed to create new zip file", e);
-                                            }
+        // Adiciona os arquivos e diretórios dentro dos arquivos ZIP ao array de arquivos
+        addFilesFromZips(tempDir, filesToZip);
 
-                                            // Exclui o diretório temporário
-                                            FileUtils.deleteDirectory(tempDirectory);
-                                        }
-                                    } catch (FileNotFoundException e) {
-                                        throw new RuntimeException(e);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                                result = UserFilesModel.builder()
-                                        .fileName(file[i].getName())
-                                        .path(file[i].getPath())
-                                        .status(StatusFile.CREATED)
-                                        .createdAt(new Date())
-                                        .build();
-                                isCreated = Boolean.TRUE;
-                                userFilesRepository.save(result);
-                            }
+        // Cria o novo arquivo ZIP com todos os arquivos e diretórios extraídos
+        ZipFile newZipFile = new ZipFile(outputFilePath);
+        ZipParameters parameters = new ZipParameters();
+        parameters.setCompressionMethod(CompressionMethod.DEFLATE);
+        parameters.setCompressionLevel(CompressionLevel.NORMAL);
+        newZipFile.addFiles(filesToZip, parameters);
+
+        // Deleta o arquivo temporário e seus arquivos
+        deleteTempDirectory(tempDir);
+    }
+
+    private void addFilesFromZips(File dir, List<File> filesToZip) throws IOException, ZipException {
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                addFilesFromZips(file, filesToZip);
+            } else if (file.getName().endsWith(".zip")) {
+                ZipFile zipFile = new ZipFile(file);
+                List<FileHeader> fileHeaders = zipFile.getFileHeaders();
+                for (FileHeader fileHeader : fileHeaders) {
+                    if (!fileHeader.isDirectory()) {
+                        String fileName = dir.getAbsolutePath() + "/" + fileHeader.getFileName();
+                        InputStream inputStream = zipFile.getInputStream(fileHeader);
+                        FileOutputStream outputStream = new FileOutputStream(fileName);
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
                         }
+                        outputStream.close();
+                        filesToZip.add(new File(fileName));
                     }
                 }
+                addFilesFromZips(file, filesToZip);
+            } else {
+                filesToZip.add(file);
             }
-            return isCreated;
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+    }
+
+    private void deleteTempDirectory(File dir) {
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                deleteTempDirectory(file);
+            } else {
+                file.delete();
+            }
+        }
+        dir.delete();
+    }
+
+
+    public Boolean checkFile(String path, String cnpj, String ipServer) throws IOException {
+        Boolean isCreated = Boolean.FALSE;
+        Path fullPath = Paths.get(path);
+        File[] file = new File(fullPath.toUri()).listFiles();
+        for (int i = 0; i < file.length; i++) {
+            Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(file[i].getName());
+            if (!filePath.isPresent()) {
+                if (FilenameUtils.getExtension(file[i].getName()).equals("txt")) {
+                    String zipPath = file[i].getPath().replace(".txt", ".zip");
+                    ZipFile zipFile = new ZipFile(zipPath);
+                    try {
+                        zipFile.addFile(file[i]);
+                        zipFile.close();
+                        FileSystemUtils.deleteRecursively(file[i]);
+                        Path pathForSave = Path.of(zipPath);
+                        String mimeType = Files.probeContentType(pathForSave);
+                        String ext = FilenameUtils.getExtension(pathForSave.toString());
+                        UserFilesModel userFilesModelSaved = UserFilesModel.builder()
+                                .cnpj(cnpj)
+                                .ipServer(ipServer)
+                                .mimeType(mimeType)
+                                .fileName(file[i].getName())
+                                .path(file[i].getPath())
+                                .extension(ext)
+                                .status(StatusFile.CREATED)
+                                .createdAt(new Date())
+                                .build();
+                        isCreated = Boolean.TRUE;
+                        userFilesRepository.save(userFilesModelSaved);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Path pathForSave = file[i].toPath();
+                    String mimeType = Files.probeContentType(pathForSave);
+                    String ext = FilenameUtils.getExtension(pathForSave.toString());
+                    UserFilesModel userFilesModelSaved = UserFilesModel.builder()
+                            .cnpj(cnpj)
+                            .ipServer(ipServer)
+                            .mimeType(mimeType)
+                            .fileName(file[i].getName())
+                            .path(file[i].getPath())
+                            .extension(ext)
+                            .status(StatusFile.CREATED)
+                            .createdAt(new Date())
+                            .build();
+                    isCreated = Boolean.TRUE;
+                    userFilesRepository.save(userFilesModelSaved);
+                }
+            }
+        }
+        return isCreated;
     }
 }
