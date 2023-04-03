@@ -53,9 +53,9 @@ public class DownloadFileControllerTest {
     void setUp() {
         userFileModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
-                .fileName("tempdir3643593192620505421.zip")
+                .fileName("fileTest.zip")
                 .createdAt(new Date())
-                .path("D:\\loadFileData\\1921680512\\1234569874323\\2020")
+                .path("D:\\loadFileData\\192168062\\06333120000197\\2023")
                 .build();
     }
 
