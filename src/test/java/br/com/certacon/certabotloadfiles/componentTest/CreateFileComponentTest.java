@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -27,6 +28,8 @@ public class CreateFileComponentTest {
     UserFilesRepository userFilesRepository;
     @Autowired
     CreateFileComponent createFileComponent;
+    @Value("${config.rootPath}")
+    private String rootPath;
 
     @Test
     @DisplayName("chamar o componente createFile quando Retornar com Falso")
@@ -34,7 +37,7 @@ public class CreateFileComponentTest {
         //Given
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
-                .path("D:\\loadFileData\\1921680512\\1234569874323\\2020")
+                .path("D:\\loadFileData\\192168062\\06333120000197\\2023")
                 .build();
         //When
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
@@ -51,7 +54,8 @@ public class CreateFileComponentTest {
         //Given
         UserFilesModel userModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
-                .path("192168062\\1273821329\\2021\\")
+                .path(rootPath + "192168062\\06333120000197\\2023\\")
+                .fileName("helloTest.txt")
                 .build();
         //When
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
