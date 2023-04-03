@@ -34,7 +34,6 @@ public class PathCreationComponent {
                 Path serverPath = Paths.get(rootPath + server);
                 Path cnpjPath = Paths.get(serverPath + "\\" + cnpj);
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
-                result.setPath(String.valueOf(yearPath));
                 if (!serverPath.toFile().isDirectory() || !cnpjPath.toFile().isDirectory() || !yearPath.toFile().isDirectory()) {
                     yearPath.toFile().mkdirs();
                     result.setStatus(StatusFile.CREATED);
