@@ -4,149 +4,198 @@ package br.com.certacon.certabotloadfiles.component;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
-import net.lingala.zip4j.ZipFile;
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @Component
 public class CreateFileComponent {
     private final UserFilesRepository userFilesRepository;
+    @Value("${config.destDir}")
+    private String destDir;
 
     public CreateFileComponent(UserFilesRepository userFilesRepository) {
         this.userFilesRepository = userFilesRepository;
     }
 
-  /* public void extractAndCompress(String inputFilePath, String outputFilePath) throws IOException {
-        // Cria um arquivo temporário para armazenar os arquivos extraídos
-        File tempDir = new File("temp");
-        if (!tempDir.exists()) {
-            tempDir.mkdir();
-        }
-
-        // Extrai todos os arquivos do arquivo ZIP e adiciona os arquivos e diretórios ao array de arquivos
-        List<File> filesToZip = new ArrayList<>();
-        ZipFile zipFile = new ZipFile(inputFilePath);
-        List<FileHeader> fileHeaders = zipFile.getFileHeaders();
-        for (FileHeader fileHeader : fileHeaders) {
-            if (!fileHeader.isDirectory()) {
-                String fileName = tempDir.getAbsolutePath() + "/" + fileHeader.getFileName();
-                zipFile.extractFile(fileHeader, fileName);
-                filesToZip.add(new File(fileName));
+    public static List<String> listFiles(File file, boolean extract) throws IOException {
+        List<String> files = new ArrayList<>();
+        if (isArchiveFile(file)) {
+            if (isZipFile(file)) {
+                files.addAll(listZipFiles(file, extract));
+            } else if (isRarFile(file)) {
+                files.addAll(listRarFiles(file, extract));
+            } else {
+                throw new UnsupportedOperationException("Unsupported archive format");
             }
+        } else {
+            files.add(file.getName());
         }
-
-        // Adiciona os arquivos e diretórios dentro dos arquivos ZIP ao array de arquivos
-        addFilesFromZips(tempDir, filesToZip);
-
-        // Cria o novo arquivo ZIP com todos os arquivos e diretórios extraídos
-        ZipFile newZipFile = new ZipFile(outputFilePath);
-        ZipParameters parameters = new ZipParameters();
-        parameters.setCompressionMethod(CompressionMethod.DEFLATE);
-        parameters.setCompressionLevel(CompressionLevel.NORMAL);
-        newZipFile.addFiles(filesToZip, parameters);
-
-        // Deleta o arquivo temporário e seus arquivos
-        deleteTempDirectory(tempDir);
+        return files;
     }
 
-    private void addFilesFromZips(File dir, List<File> filesToZip) throws IOException, ZipException {
-        for (File file : dir.listFiles()) {
-            if (file.isDirectory()) {
-                addFilesFromZips(file, filesToZip);
-            } else if (file.getName().endsWith(".zip")) {
-                ZipFile zipFile = new ZipFile(file);
-                List<FileHeader> fileHeaders = zipFile.getFileHeaders();
-                for (FileHeader fileHeader : fileHeaders) {
-                    if (!fileHeader.isDirectory()) {
-                        String fileName = dir.getAbsolutePath() + "/" + fileHeader.getFileName();
-                        InputStream inputStream = zipFile.getInputStream(fileHeader);
-                        FileOutputStream outputStream = new FileOutputStream(fileName);
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = inputStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, bytesRead);
+    private static boolean isArchiveFile(File file) {
+        return isZipFile(file) || isRarFile(file);
+    }
+
+    private static boolean isZipFile(File file) {
+        return file.getName().toLowerCase().endsWith(".zip");
+    }
+
+    private static boolean isRarFile(File file) {
+        return file.getName().toLowerCase().endsWith(".rar");
+    }
+
+    private static List<String> listZipFiles(File file, boolean extract) throws IOException {
+        List<String> files = new ArrayList<>();
+        try (ZipFile zipFile = new ZipFile(file)) {
+            zipFile.stream().forEach(entry -> {
+                if (!entry.isDirectory()) {
+                    String fileName = entry.getName();
+                    files.add(fileName);
+                    if (extract) {
+                        try (FileOutputStream fos = new FileOutputStream(new File(file.getParent(), fileName))) {
+                            fos.write(zipFile.getInputStream(entry).readAllBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        outputStream.close();
-                        filesToZip.add(new File(fileName));
                     }
                 }
-                addFilesFromZips(file, filesToZip);
-            } else {
-                filesToZip.add(file);
-            }
+            });
         }
+        return files;
     }
 
-    private void deleteTempDirectory(File dir) {
-        for (File file : dir.listFiles()) {
-            if (file.isDirectory()) {
-                deleteTempDirectory(file);
-            } else {
-                file.delete();
+    private static List<String> listRarFiles(File file, boolean extract) throws IOException {
+        List<String> files = new ArrayList<>();
+        try (Archive archive = new Archive(new FileInputStream(file))) {
+            FileHeader fileHeader = archive.nextFileHeader();
+            while (fileHeader != null) {
+                if (!fileHeader.isDirectory()) {
+                    String fileName = fileHeader.getFileNameString().trim();
+                    files.add(fileName);
+                    if (extract) {
+                        try (FileOutputStream fos = new FileOutputStream(new File(file.getParent(), fileName))) {
+                            archive.extractFile(fileHeader, fos);
+                        } catch (RarException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                fileHeader = archive.nextFileHeader();
             }
+        } catch (RarException e) {
+            throw new RuntimeException(e);
         }
-        dir.delete();
-    }*/
-
+        return files;
+    }
 
     public Boolean checkFile(String path, String cnpj, String ipServer) throws IOException {
         Boolean isCreated = Boolean.FALSE;
         Path fullPath = Paths.get(path);
-        File[] file = new File(fullPath.toString()).listFiles();
-        for (int i = 0; i < file.length; i++) {
-            Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(file[i].getName());
+        File[] listFile = new File(fullPath.toString()).listFiles();
+        for (File value : listFile) {
+            Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(value.getName());
             if (!filePath.isPresent()) {
-                if (FilenameUtils.getExtension(file[i].getName()).equals("txt")) {
-                    String zipPath = file[i].getPath().replace(FilenameUtils.getExtension(file[i].getName()), "zip");
-                    Path pathForSave = Path.of(zipPath);
-                    ZipFile zipFile = new ZipFile(zipPath);
-                    try {
-                        zipFile.addFile(file[i]);
-                        zipFile.close();
-                        FileSystemUtils.deleteRecursively(file[i]);
-                        String mimeType = Files.probeContentType(pathForSave);
-                        String ext = FilenameUtils.getExtension(pathForSave.toString());
-                        UserFilesModel userFilesModelSaved = UserFilesModel.builder()
-                                .cnpj(cnpj)
-                                .ipServer(ipServer)
-                                .mimeType(mimeType)
-                                .fileName(pathForSave.getFileName().toString())
-                                .path(zipPath)
-                                .extension(ext)
-                                .status(StatusFile.CREATED)
-                                .createdAt(new Date())
-                                .build();
-                        isCreated = Boolean.TRUE;
-                        userFilesRepository.save(userFilesModelSaved);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                if (FilenameUtils.getExtension(value.getName()).equals("zip")) {
+                    File zipFile = new File(value.getPath());
+                    File tempDir = new File(destDir);
+                    List<File> internalZipFiles = new ArrayList<>();
+                    try (ZipFile zip = new ZipFile(zipFile)) {
+                        Enumeration<? extends ZipEntry> entries = zip.entries();
+                        while (entries.hasMoreElements()) {
+                            ZipEntry entry = entries.nextElement();
+                            String entryName = entry.getName();
+                            if (entryName.endsWith(".zip")) {
+                                Files.move(Path.of(value.getPath() + entryName), Path.of("D:\\loadFileData\\"));
+                                File internalZipFile = new File(tempDir, entryName);
+                                try (InputStream is = zip.getInputStream(entry);
+                                     OutputStream os = new FileOutputStream(internalZipFile)) {
+                                    IOUtils.copy(is, os);
+                                }
+                            }
+                        }
                     }
-                } else {
-                    Path pathForSave = file[i].toPath();
+                    // Etapa 2: extrair cada arquivo ZIP interno e coletar informações
+                    List<String> infoList = new ArrayList<>();
+                    for (File internalZipFile : internalZipFiles) {
+                        try (ZipFile zip = new ZipFile(internalZipFile)) {
+                            Enumeration<? extends ZipEntry> entries = zip.entries();
+                            while (entries.hasMoreElements()) {
+                                ZipEntry entry = entries.nextElement();
+                                String entryName = entry.getName();
+                                // Aqui você pode coletar as informações desejadas
+                                infoList.add(entryName);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    // Etapa 3: excluir pastas e arquivos extraídos
+                    FileUtils.deleteQuietly(tempDir);
+                }
+            }
+            if (FilenameUtils.getExtension(value.getName()).equals("rar")) {
+                File file = new File(destDir);
+                List<String> files = listZipFiles(file, true);
+                System.out.println(files);
+            }
+
+            if (FilenameUtils.getExtension(value.getName()).equals("txt")) {
+                String zipPath = value.getPath().replace(FilenameUtils.getExtension(value.getName()), "zip");
+                Path pathForSave = Path.of(zipPath);
+                ZipFile zipFile = new ZipFile(zipPath);
+                try {
+                    zipFile.close();
+                    FileSystemUtils.deleteRecursively(value);
                     String mimeType = Files.probeContentType(pathForSave);
                     String ext = FilenameUtils.getExtension(pathForSave.toString());
                     UserFilesModel userFilesModelSaved = UserFilesModel.builder()
                             .cnpj(cnpj)
                             .ipServer(ipServer)
                             .mimeType(mimeType)
-                            .fileName(file[i].getName())
-                            .path(file[i].getPath())
+                            .fileName(pathForSave.getFileName().toString())
+                            .path(zipPath)
                             .extension(ext)
                             .status(StatusFile.CREATED)
                             .createdAt(new Date())
                             .build();
                     isCreated = Boolean.TRUE;
                     userFilesRepository.save(userFilesModelSaved);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+            } else {
+                Path pathForSave = value.toPath();
+                String mimeType = Files.probeContentType(pathForSave);
+                String ext = FilenameUtils.getExtension(pathForSave.toString());
+                UserFilesModel userFilesModelSaved = UserFilesModel.builder()
+                        .cnpj(cnpj)
+                        .ipServer(ipServer)
+                        .mimeType(mimeType)
+                        .fileName(value.getName())
+                        .path(value.getPath())
+                        .extension(ext)
+                        .status(StatusFile.CREATED)
+                        .createdAt(new Date())
+                        .build();
+                isCreated = Boolean.TRUE;
+                userFilesRepository.save(userFilesModelSaved);
             }
         }
         return isCreated;
