@@ -17,7 +17,7 @@ public class PostRestTemplateService {
         this.restTemplate = new RestTemplateBuilder().rootUri("http://192.168.0.104:8092/certabot").build();
     }
 
-    public ArquivoEfdModelVO enviarArquivoEfd(ArquivoEfdVO arquivoEfdVO) {
+    public ResponseEntity<ArquivoEfdModelVO> enviarArquivoEfd(ArquivoEfdVO arquivoEfdVO) {
         ResponseEntity<ArquivoEfdModelVO> resposta = null;
         try {
             // Crie um objeto HttpEntity contendo o objeto ArquivoEfdVO como corpo da solicitação POST
@@ -26,27 +26,23 @@ public class PostRestTemplateService {
             HttpEntity<ArquivoEfdVO> requestEntity = new HttpEntity<>(arquivoEfdVO, headers);
             // Faça a solicitação POST e obtenha a resposta como uma instância de ArquivoEfdVO
             resposta = restTemplate.exchange("/arquivo/efd", HttpMethod.POST, requestEntity, ArquivoEfdModelVO.class);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        } finally {
-            return resposta.getBody();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Objeto não encontrado");
         }
+        return resposta;
     }
 
-    public ProcessFileModelVO createProcess(ProcessFileVO processFileVO) {
+    public ResponseEntity<ProcessFileModelVO> createProcess(ProcessFileVO processFileVO) {
         ResponseEntity<ProcessFileModelVO> resposta = null;
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<ProcessFileVO> requestEntity = new HttpEntity<>(processFileVO, headers);
-
             // Faça a solicitação POST e obtenha a resposta como uma instância de ArquivoEfdVO
             resposta = restTemplate.exchange("/process/file", HttpMethod.POST, requestEntity, ProcessFileModelVO.class);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-
-        } finally {
-            return resposta.getBody();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Objeto não encontrado");
         }
+        return resposta;
     }
 }
