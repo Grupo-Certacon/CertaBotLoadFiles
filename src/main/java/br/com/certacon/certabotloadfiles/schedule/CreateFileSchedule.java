@@ -3,6 +3,7 @@ package br.com.certacon.certabotloadfiles.schedule;
 import br.com.certacon.certabotloadfiles.component.CreateFileComponent;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
+import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,10 +14,12 @@ import java.util.List;
 @Component
 public class CreateFileSchedule {
     private final CreateFileComponent createFileComponent;
+    private final UserFilesRepository userFilesRepository;
     private final LoadFilesRepository loadFilesRepository;
 
-    public CreateFileSchedule(CreateFileComponent createFileComponent, LoadFilesRepository loadFilesRepository) {
+    public CreateFileSchedule(CreateFileComponent createFileComponent, UserFilesRepository userFilesRepository, LoadFilesRepository loadFilesRepository) {
         this.createFileComponent = createFileComponent;
+        this.userFilesRepository = userFilesRepository;
         this.loadFilesRepository = loadFilesRepository;
     }
 
