@@ -25,8 +25,9 @@ public class PathCreationComponent {
     public Boolean checkPath(UUID id) {
         Boolean isCreated = Boolean.FALSE;
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
-        LoadFilesModel result = model.get();
+        LoadFilesModel result = new LoadFilesModel();
         try {
+            result = model.get();
             if (model.isPresent()) {
                 String server = result.getServerFolder().replaceAll("[^0-9]", "");
                 String cnpj = result.getCnpjFolder().replaceAll("[^0-9]", "");
@@ -36,8 +37,11 @@ public class PathCreationComponent {
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
                 if (!serverPath.toFile().isDirectory() || !cnpjPath.toFile().isDirectory() || !yearPath.toFile().isDirectory()) {
                     yearPath.toFile().mkdirs();
+                    result.setPath(yearPath.toString());
                     result.setStatus(StatusFile.CREATED);
                     isCreated = Boolean.TRUE;
+                } else {
+                    result.setPath(yearPath.toString());
                 }
             }
         } catch (RuntimeException e) {
