@@ -1,5 +1,6 @@
 package br.com.certacon.certabotloadfiles.service;
 
+import br.com.certacon.certabotloadfiles.exception.BadRequestException;
 import br.com.certacon.certabotloadfiles.vo.ArquivoEfdModelVO;
 import br.com.certacon.certabotloadfiles.vo.ArquivoEfdVO;
 import br.com.certacon.certabotloadfiles.vo.ProcessFileModelVO;
@@ -40,8 +41,8 @@ public class PostRestTemplateService {
             HttpEntity<ProcessFileVO> requestEntity = new HttpEntity<>(processFileVO, headers);
             // Faça a solicitação POST e obtenha a resposta como uma instância de ArquivoEfdVO
             resposta = restTemplate.exchange("/process/file", HttpMethod.POST, requestEntity, ProcessFileModelVO.class);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Objeto não encontrado");
+        } catch (BadRequestException e) {
+            throw new BadRequestException();
         }
         return resposta;
     }
