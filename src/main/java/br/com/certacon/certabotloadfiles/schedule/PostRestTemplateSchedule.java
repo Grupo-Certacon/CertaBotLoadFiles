@@ -41,7 +41,7 @@ public class PostRestTemplateSchedule {
                             .clientCnpj(modelList.get(i).getCnpj())
                             .name("Certacon")
                             .build();
-                    ArquivoEfdModelVO result = postRestTemplateService.enviarArquivoEfd(arquivoEfdVO);
+                    ArquivoEfdModelVO result = postRestTemplateService.enviarArquivoEfd(arquivoEfdVO).getBody();
                     if (result != null) {
                         ProcessFileVO processFileVO = ProcessFileVO.builder()
                                 .id_arquivo(result.getId().toString())
@@ -52,7 +52,7 @@ public class PostRestTemplateSchedule {
                                 .url_de_download(dockerPathDownload + modelList.get(i).getId().toString())
                                 .nome_arquivo(modelList.get(i).getFileName())
                                 .build();
-                        ProcessFileModelVO processResult = postRestTemplateService.createProcess(processFileVO);
+                        ProcessFileModelVO processResult = postRestTemplateService.createProcess(processFileVO).getBody();
                         if (processResult != null) {
                             modelList.get(i).setProcessId(processResult.getId());
                             modelList.get(i).setStatus(StatusFile.UPLOADED);
