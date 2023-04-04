@@ -19,3 +19,4 @@ config:
   rootPath: D:\loadFileData\
   downloadPath: /home/selenium/Downloads
   dockerPathDownload: http://192.168.0.104:8094/LoadFile/downloads/
+  destDir: D:\loadFileData\Extraidos
