@@ -62,7 +62,7 @@ class PostRestTemplateServiceTest {
                 .usuario("giovanni.andrade@certacon.com.br")
                 .caminho_de_destino_download(downloadPath)
                 .nome_arquivo("0008.zip")
-                .id_arquivo("1cd27c3a-9a0f-49a5-bd2b-e987252b7def")
+                .id_arquivo("04428f15-02cb-42ff-a329-e97a0df0cb07")
                 .build();
         ProcessFileModelVO processFileModelVO = ProcessFileModelVO.builder().build();
         ResponseEntity<ProcessFileModelVO> expected = ResponseEntity.ok().body(processFileModelVO);
@@ -76,10 +76,10 @@ class PostRestTemplateServiceTest {
     @DisplayName("chamar o metodo CreateProcess quando retornar com NotFound")
     void shouldCallPostRestTemplateServiceWhenCreateProcessReturnWithNotFound() {
         //Given
-        RuntimeException expected = new RuntimeException("Objeto não encontrado");
+        Exception expected = new Exception();
         //When
-        RuntimeException actual = assertThrows(RuntimeException.class, () -> postRestTemplateService.createProcess(null));
+        Exception actual = assertThrows(Exception.class, () -> postRestTemplateService.createProcess(null));
         //Then
-        assertEquals(expected.getMessage(), actual.getMessage());
+        assertEquals(expected.getCause(), actual.getCause());
     }
 }

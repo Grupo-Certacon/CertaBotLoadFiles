@@ -31,6 +31,8 @@ public class PostRestTemplateScheduleTest {
         //Given
         UserFilesModel userFilesModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
+                .fileName("batatinha.txt")
+                .cnpj("23445531645")
                 .status(StatusFile.CREATED)
                 .build();
         List<UserFilesModel> modelList = List.of(userFilesModel);
