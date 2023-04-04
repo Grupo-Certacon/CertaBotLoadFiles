@@ -53,9 +53,9 @@ public class DownloadFileControllerTest {
     void setUp() {
         userFileModel = UserFilesModel.builder()
                 .id(UUID.randomUUID())
-                .fileName("fileTest.zip")
                 .createdAt(new Date())
-                .path("D:\\loadFileData\\192168062\\06333120000197\\2023")
+                .path("D:\\loadFileData\\192168062\\06333120000197\\2023\\SpedEFD-09339936000973-0025541260019-Remessa de arquivo substituto-set2022.zip")
+                .mimeType("application/x-zip-compressed")
                 .build();
     }
 
