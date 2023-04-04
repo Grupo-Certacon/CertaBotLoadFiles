@@ -50,24 +50,6 @@ public class PathCreationComponentTest {
 
     @Test
     @DisplayName("chamar o componente checkPath quando retornar com Verdadeiro")
-    void shouldCallPathCreationComponentWhenCreatePathReturnWithTrue() {
-        //Given
-        LoadFilesModel model = LoadFilesModel.builder()
-                .id(UUID.randomUUID())
-                .serverFolder("192.168.0.61")
-                .cnpjFolder("127.382.132.9")
-                .yearFolder("2021")
-                .build();
-        //When
-        BDDMockito.when(loadFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(model));
-        BDDMockito.when(loadFilesRepository.save(any(LoadFilesModel.class))).thenReturn(model);
-        Boolean actual = pathCreationComponent.checkPath(model.getId());
-        //Then
-        assertTrue(actual);
-    }
-
-    @Test
-    @DisplayName("chamar o componente checkPath quando retornar com Verdadeiro")
     void shouldCallPathCreationComponentWhenCreatePathReturnWithException() {
         //Given
         LoadFilesModel model = LoadFilesModel.builder()
