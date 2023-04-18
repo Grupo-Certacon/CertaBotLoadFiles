@@ -15,7 +15,7 @@ public class PostRestTemplateService {
     private RestTemplate restTemplate;
 
     public PostRestTemplateService() {
-        this.restTemplate = new RestTemplateBuilder().rootUri("http://192.168.0.104:8092/certabot").build();
+        this.restTemplate = new RestTemplateBuilder().rootUri("http://192.168.0.101:8092/certabot").build();
     }
 
     public ResponseEntity<ArquivoEfdModelVO> enviarArquivoEfd(ArquivoEfdVO arquivoEfdVO) {

@@ -2,6 +2,7 @@ package br.com.certacon.certabotloadfiles.componentTest;
 
 
 import br.com.certacon.certabotloadfiles.component.CreateFileComponent;
+import br.com.certacon.certabotloadfiles.component.UnzipAndZipComponent;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
-@SpringBootTest(classes = {CreateFileComponent.class, Properties.class})
+@SpringBootTest(classes = {CreateFileComponent.class, Properties.class, UnzipAndZipComponent.class})
 public class CreateFileComponentTest {
+    @Autowired
+    UnzipAndZipComponent unzipAndZipComponent;
     @MockBean
     UserFilesRepository userFilesRepository;
     @Autowired
@@ -68,7 +71,7 @@ public class CreateFileComponentTest {
 
     @BeforeEach
     void setUp() {
-        createFileComponent = new CreateFileComponent(userFilesRepository);
+        createFileComponent = new CreateFileComponent(unzipAndZipComponent, userFilesRepository);
     }
 
 }

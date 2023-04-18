@@ -4,6 +4,7 @@ import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,5 +12,5 @@ import java.util.UUID;
 public interface UserFilesRepository extends JpaRepository<UserFilesModel, UUID> {
     Optional<UserFilesModel> findByFileName(String fileName);
 
-    UserFilesModel findAllByExtension(String extension);
+    List<UserFilesModel> findAllByExtension(String extension);
 }
