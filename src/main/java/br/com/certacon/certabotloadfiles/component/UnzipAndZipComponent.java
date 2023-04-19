@@ -5,8 +5,10 @@ import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,6 +26,80 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
 @Component
 public class UnzipAndZipComponent {
+
+    @Value("${config.xmlDir}")
+    private String xmlDir;
+
+    public UserFilesModel UnzipAndZipFiles(UserFilesModel zipModel, File zipFile) throws IOException {
+        File uuidDir = new File("D:\\" + "ZIP-" + zipModel.getId().toString().toUpperCase());
+        File compactedDir = new File(uuidDir + "\\" + "Compactados");
+        File descompactedDir = new File(uuidDir + "\\" + "Descompactados");
+
+        if (!uuidDir.exists()) createDir(uuidDir);
+
+        if (!compactedDir.exists()) createDir(compactedDir);
+
+        if (!descompactedDir.exists()) createDir(descompactedDir);
+
+        File zipPath = new File(zipModel.getPath());
+        if (FilenameUtils.getExtension(zipFile.getName()).equals("rar") && zipModel.getStatus().equals(StatusFile.CREATED) ||
+                FilenameUtils.getExtension(zipFile.getName()).equals("zip") && zipModel.getStatus().equals(StatusFile.CREATED)) {
+            StatusFile movedStatus = moveFile(zipFile, Path.of(compactedDir + "\\" + zipFile.getName()));
+            if (movedStatus.equals(StatusFile.MOVED)) {
+                zipModel.setStatus(StatusFile.MOVED);
+                File movedFile = new File(compactedDir + "\\" + zipFile.getName());
+                StatusFile zipStatus = unzipFile(movedFile, Path.of(descompactedDir.getPath()));
+                zipModel.setStatus(zipStatus);
+            }
+
+        }
+        do {
+            File[] descompactedList = readFolder(descompactedDir);
+            for (int i = 0; i < descompactedList.length; i++) {
+                if (descompactedList[i].isDirectory()) {
+                    extractFolder(descompactedList[i], compactedDir);
+                }
+                if (FilenameUtils.getExtension(descompactedList[i].getName()).equals("rar") ||
+                        FilenameUtils.getExtension(descompactedList[i].getName()).equals("zip")) {
+                    moveFile(descompactedList[i], Path.of(compactedDir.getPath()));
+                }
+            }
+            File[] compactedList = readFolder(compactedDir);
+            for (int i = 0; i < compactedList.length; i++) {
+                unzipFile(compactedList[i], descompactedDir.toPath());
+            }
+        } while (checkFolderExistence(descompactedDir.listFiles()).equals(Boolean.TRUE));
+
+        compactedDir.delete();
+
+        extractFolder(descompactedDir, descompactedDir.getParentFile());
+
+        File[] checkXml = descompactedDir.getParentFile().listFiles();
+        for (int i = 0; i < checkXml.length; i++) {
+            if (FilenameUtils.getExtension(checkXml[i].getName()).equals("xml")) {
+                String cnpjManipulado = zipModel.getCnpj().replaceAll("[^0-9]", "");
+                String xmlFolder = xmlDir + "\\" + cnpjManipulado + "\\" + "Xmls";
+                File xmlFile = new File(xmlFolder);
+                if (!xmlFile.exists()) {
+                    xmlFile.mkdirs();
+                }
+                moveFile(checkXml[i], Path.of(xmlFile + "\\" + checkXml[i].getName()));
+            }
+        }
+        File finalZip = new File(zipPath.getParentFile().getPath());
+        if (zipFiles(uuidDir, finalZip).equals(StatusFile.ZIPPED)) {
+            zipModel.setStatus(StatusFile.ZIPPED);
+            zipModel.setPath(zipPath.getParentFile() + "\\" + uuidDir.getName() + ".zip");
+            zipModel.setExtension("zip");
+            zipModel.setFileName(uuidDir.getName() + ".zip");
+            zipModel.setStatus(StatusFile.UPDATED);
+            FileUtils.forceDelete(uuidDir);
+        } else {
+            throw new RuntimeException("Algo deu errado!");
+
+        }
+        return zipModel;
+    }
 
     private File[] readFolder(File fileToRead) {
         File[] fileList = fileToRead.listFiles();
@@ -99,7 +175,7 @@ public class UnzipAndZipComponent {
         return StatusFile.ZIPPED;
     }
 
-    private Boolean checkFileExistence(File[] fileList) {
+    private Boolean checkFolderExistence(File[] fileList) {
         for (int i = 0; i < fileList.length; i++) {
             if (fileList[i].isDirectory()) {
                 return Boolean.TRUE;
@@ -107,6 +183,7 @@ public class UnzipAndZipComponent {
         }
         return Boolean.FALSE;
     }
+
 
     private StatusFile extractFolder(File directory, File destDir) throws IOException {
         File[] directoryList = readFolder(directory);
@@ -124,61 +201,4 @@ public class UnzipAndZipComponent {
         directory.delete();
         return StatusFile.MOVED;
     }
-
-    public UserFilesModel UnzipAndZipFiles(UserFilesModel zipModel, File zipFile) throws IOException {
-        File uuidDir = new File("D:\\" + zipModel.getId().toString());
-        File compactedDir = new File(uuidDir + "\\" + "Compactados");
-        File descompactedDir = new File(uuidDir + "\\" + "Descompactados");
-
-        if (!uuidDir.exists()) createDir(uuidDir);
-
-        if (!compactedDir.exists()) createDir(compactedDir);
-
-        if (!descompactedDir.exists()) createDir(descompactedDir);
-
-        File zipPath = new File(zipModel.getPath());
-        if (FilenameUtils.getExtension(zipFile.getName()).equals("rar") && zipModel.getStatus().equals(StatusFile.CREATED) ||
-                FilenameUtils.getExtension(zipFile.getName()).equals("zip") && zipModel.getStatus().equals(StatusFile.CREATED)) {
-            StatusFile movedStatus = moveFile(zipFile, Path.of(compactedDir + "\\" + zipFile.getName()));
-            if (movedStatus.equals(StatusFile.MOVED)) {
-                File movedFile = new File(compactedDir + "\\" + zipFile.getName());
-                StatusFile zipStatus = unzipFile(movedFile, Path.of(descompactedDir.getPath()));
-                zipModel.setStatus(zipStatus);
-            }
-
-        }
-        do {
-            File[] descompactedList = readFolder(descompactedDir);
-            for (int i = 0; i < descompactedList.length; i++) {
-                if (descompactedList[i].isDirectory()) {
-                    extractFolder(descompactedList[i], compactedDir);
-                }
-                if (FilenameUtils.getExtension(descompactedList[i].getName()).equals("rar") ||
-                        FilenameUtils.getExtension(descompactedList[i].getName()).equals("zip")) {
-                    moveFile(descompactedList[i], Path.of(compactedDir.getPath()));
-                }
-            }
-            File[] compactedList = readFolder(compactedDir);
-            for (int i = 0; i < compactedList.length; i++) {
-                unzipFile(compactedList[i], descompactedDir.toPath());
-            }
-        } while (checkFileExistence(descompactedDir.listFiles()).equals(Boolean.TRUE));
-
-        compactedDir.delete();
-
-        extractFolder(descompactedDir, descompactedDir.getParentFile());
-
-        if (zipFiles(uuidDir, new File(zipPath.getParentFile().getPath())).equals(StatusFile.ZIPPED)) {
-            zipModel.setPath(zipPath.getParentFile() + "\\" + uuidDir.getName() + ".zip");
-            zipModel.setExtension("zip");
-            zipModel.setFileName(uuidDir.getName() + ".zip");
-            zipModel.setStatus(StatusFile.UPDATED);
-        } else {
-            throw new RuntimeException("Algo deu errado!");
-
-        }
-        return zipModel;
-    }
-
-
 }
