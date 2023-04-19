@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
@@ -35,29 +36,17 @@ public class CreateFileComponent {
         this.userFilesRepository = userFilesRepository;
     }
 
-    private File createFolder(Path path, String folderName) throws IOException {
-        File newPath = Path.of(path + "\\" + folderName).toFile();
-        if (!newPath.exists()) {
-            newPath.mkdirs();
-        }
-        return newPath;
-    }
-
-    private File moveFile(File fileToMove, Path destiny) throws IOException {
-        Path destinyPath = Path.of(destiny + "\\" + fileToMove.getName());
-        File movedFile = Files.move(fileToMove.toPath(), destinyPath, ATOMIC_MOVE).toFile();
-        return movedFile;
-    }
-
     public Boolean checkFile(String path, String cnpj, String ipServer) {
+        String xmlFolder = filesDir + "\\" + cnpj.replaceAll("[^0-9]", "") + "\\" + "Xmls";
         Boolean isCreated = Boolean.FALSE;
         Path fullPath = Paths.get(path);
         try {
             File[] listFile = new File(fullPath.toString()).listFiles();
+            String spedName = "SPED-" + UUID.randomUUID();
             for (File value : listFile) {
                 Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(value.getName());
-                if (filePath.isPresent() && filePath.get().getStatus().equals(StatusFile.OK)) {
-                    File conludedFolder = new File(filesDir + "\\" + cnpj + "\\" + "Concluídos");
+                if (filePath.isPresent() && filePath.get().getStatus().equals(StatusFile.UPLOADED)) {
+                    File conludedFolder = new File(filesDir + "\\" + cnpj + "\\" + "Enviados");
                     moveFile(value, Path.of(conludedFolder + "\\" + value.getName()));
                 }
 
@@ -84,10 +73,9 @@ public class CreateFileComponent {
                         userFilesRepository.delete(userFilesModelSaved);
                         userFilesRepository.save(finalModel);
                     } else if (FilenameUtils.getExtension(value.getName()).equals("txt")) {
-                        File spedFolder = createFolder(value.getParentFile().toPath(), "SPED");
+                        File spedFolder = createFolder(value.getParentFile().toPath(), spedName.toUpperCase());
                         moveFile(value, spedFolder.toPath());
                     } else if (FilenameUtils.getExtension(value.getName()).equals("xml")) {
-                        File xmlFolder = new File(filesDir + "\\" + cnpj + "\\" + "Xmls");
                         moveFile(value, Path.of(xmlFolder + "\\" + value.getName()));
                     } else if (value.isDirectory()) {
                         String folderPath = value.getPath();
@@ -140,4 +128,19 @@ public class CreateFileComponent {
         }
         return isCreated;
     }
+
+    private File createFolder(Path path, String folderName) throws IOException {
+        File newPath = Path.of(path + "\\" + folderName).toFile();
+        if (!newPath.exists()) {
+            newPath.mkdirs();
+        }
+        return newPath;
+    }
+
+    private File moveFile(File fileToMove, Path destiny) throws IOException {
+        Path destinyPath = Path.of(destiny + "\\" + fileToMove.getName());
+        File movedFile = Files.move(fileToMove.toPath(), destinyPath, ATOMIC_MOVE).toFile();
+        return movedFile;
+    }
+
 }
