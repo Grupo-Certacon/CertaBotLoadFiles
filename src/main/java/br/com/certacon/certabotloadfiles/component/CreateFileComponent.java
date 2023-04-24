@@ -3,6 +3,7 @@ package br.com.certacon.certabotloadfiles.component;
 
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
+import br.com.certacon.certabotloadfiles.utils.FileType;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -30,14 +31,16 @@ public class CreateFileComponent {
     private final UserFilesRepository userFilesRepository;
     @Value("${config.xmlDir}")
     private String filesDir;
+    @Value("${config.rootPath}")
+    private String rootPath;
 
     public CreateFileComponent(UnzipAndZipComponent unzipAndZipComponent, UserFilesRepository userFilesRepository) {
         this.unzipAndZipComponent = unzipAndZipComponent;
         this.userFilesRepository = userFilesRepository;
     }
 
-    public Boolean checkFile(String path, String cnpj, String ipServer) {
-        String xmlFolder = filesDir + "\\" + cnpj.replaceAll("[^0-9]", "") + "\\" + "Xmls";
+    public Boolean checkFile(String path, String cnpj, String ipServer, String year) {
+        String nfeFolder = rootPath + "\\" + ipServer + "\\" + cnpj.replaceAll("[^0-9]", "") + "\\" + year + "\\" + FileType.NFe;
         Boolean isCreated = Boolean.FALSE;
         Path fullPath = Paths.get(path);
         try {
@@ -46,7 +49,7 @@ public class CreateFileComponent {
             for (File value : listFile) {
                 Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(value.getName());
                 if (filePath.isPresent() && filePath.get().getStatus().equals(StatusFile.UPLOADED)) {
-                    File conludedFolder = new File(filesDir + "\\" + cnpj + "\\" + "Enviados");
+                    File conludedFolder = new File(filesDir + "\\" + cnpj + "\\" + year + "\\" + "Enviados");
                     moveFile(value, Path.of(conludedFolder + "\\" + value.getName()));
                 }
 
@@ -73,11 +76,22 @@ public class CreateFileComponent {
                         userFilesRepository.delete(userFilesModelSaved);
                         userFilesRepository.save(finalModel);
                     } else if (FilenameUtils.getExtension(value.getName()).equals("txt")) {
-                        File spedFolder = createFolder(value.getParentFile().toPath(), spedName.toUpperCase());
+                        File spedFolder = new File(rootPath + "\\" + ipServer + "\\" + cnpj + "\\" + year + "\\" + spedName);
+                        if (!spedFolder.exists()) spedFolder.mkdirs();
                         moveFile(value, spedFolder.toPath());
                     } else if (FilenameUtils.getExtension(value.getName()).equals("xml")) {
-                        moveFile(value, Path.of(xmlFolder + "\\" + value.getName()));
+                        File xmlFile = new File(nfeFolder);
+                        if (!xmlFile.exists()) xmlFile.mkdirs();
+                        moveFile(value, Path.of(nfeFolder));
                     } else if (value.isDirectory()) {
+                        unzipAndZipComponent.extractFolder(value, null);
+                        if (unzipAndZipComponent.checkFolderExistence(value.getParentFile().listFiles()).equals(Boolean.TRUE)) {
+                            File[] parentList = value.getParentFile().listFiles();
+                            for (int i = 0; i < parentList.length; i++) {
+                                if (parentList[i].isDirectory())
+                                    unzipAndZipComponent.extractFolder(parentList[i], null);
+                            }
+                        }
                         String folderPath = value.getPath();
                         // nome do arquivo zip que você deseja criar
                         String zipFilePath = value.getPath() + ".zip";
@@ -91,7 +105,7 @@ public class CreateFileComponent {
                             ZipArchiveEntry entry = new ZipArchiveEntry(file.getName());
                             zipOut.putArchiveEntry(entry);
                             FileInputStream in = new FileInputStream(file);
-                            byte[] b = new byte[4096];
+                            byte[] b = new byte[8192];
                             int count = 0;
                             while ((count = in.read(b)) > 0) {
                                 zipOut.write(b, 0, count);
