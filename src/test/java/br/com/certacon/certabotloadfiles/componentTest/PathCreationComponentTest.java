@@ -3,6 +3,7 @@ package br.com.certacon.certabotloadfiles.componentTest;
 import br.com.certacon.certabotloadfiles.component.PathCreationComponent;
 import br.com.certacon.certabotloadfiles.configuration.Properties;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
+import br.com.certacon.certabotloadfiles.repository.FileTypeRepository;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +27,8 @@ public class PathCreationComponentTest {
     PathCreationComponent pathCreationComponent;
     @MockBean
     LoadFilesRepository loadFilesRepository;
-
+    @MockBean
+    FileTypeRepository fileTypeRepository;
     @Value("${config.rootPath}")
     private String rootPath;
 
@@ -68,7 +70,7 @@ public class PathCreationComponentTest {
 
     @BeforeEach
     void setUp() {
-        pathCreationComponent = new PathCreationComponent(rootPath, loadFilesRepository);
+        pathCreationComponent = new PathCreationComponent(fileTypeRepository, rootPath, loadFilesRepository);
     }
 
 }

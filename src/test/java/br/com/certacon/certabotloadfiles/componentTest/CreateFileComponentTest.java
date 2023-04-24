@@ -46,7 +46,7 @@ public class CreateFileComponentTest {
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
         BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.of(userModel));
-        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer());
+        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer(), userModel.getYear());
         //Then
         assertFalse(actual);
     }
@@ -64,7 +64,7 @@ public class CreateFileComponentTest {
         BDDMockito.when(userFilesRepository.findById(any(UUID.class))).thenReturn(Optional.of(userModel));
         BDDMockito.when(userFilesRepository.save(any(UserFilesModel.class))).thenReturn(userModel);
         BDDMockito.when(userFilesRepository.findByFileName(any(String.class))).thenReturn(Optional.empty());
-        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer());
+        Boolean actual = createFileComponent.checkFile(userModel.getPath(), userModel.getCnpj(), userModel.getIpServer(), userModel.getYear());
         //Then
         assertTrue(actual);
     }
