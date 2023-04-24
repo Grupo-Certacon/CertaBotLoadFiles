@@ -1,6 +1,8 @@
 package br.com.certacon.certabotloadfiles.component;
 
+import br.com.certacon.certabotloadfiles.model.FileTypeModel;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
+import br.com.certacon.certabotloadfiles.repository.FileTypeRepository;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,16 +10,20 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class PathCreationComponent {
+
+    private final FileTypeRepository fileTypeRepository;
     private final LoadFilesRepository loadFilesRepository;
     @Value("${config.rootPath}")
     private String rootPath;
 
-    public PathCreationComponent(@Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
+    public PathCreationComponent(FileTypeRepository fileTypeRepository, @Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
+        this.fileTypeRepository = fileTypeRepository;
         this.loadFilesRepository = loadFilesRepository;
         this.rootPath = rootPath;
     }
@@ -37,6 +43,14 @@ public class PathCreationComponent {
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
                 if (!serverPath.toFile().isDirectory() || !cnpjPath.toFile().isDirectory() || !yearPath.toFile().isDirectory()) {
                     yearPath.toFile().mkdirs();
+                    List<FileTypeModel> files = fileTypeRepository.findAll();
+                    // Path efdPath = Path.of(yearPath + "\\" + FileType.EFDPadrao);
+                    // efdPath.toFile().mkdirs();
+                    // Path nfePath = Path.of(yearPath + "\\" + FileType.NFe);
+                    for (int i = 0; i < files.size(); i++) {
+                        Path filePath = Path.of(yearPath + "\\" + files.get(i).getFileType());
+                        filePath.toFile().mkdirs();
+                    }
                     result.setPath(yearPath.toString());
                     result.setStatus(StatusFile.CREATED);
                     isCreated = Boolean.TRUE;

@@ -1,6 +1,7 @@
 package br.com.certacon.certabotloadfiles.component;
 
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
+import br.com.certacon.certabotloadfiles.utils.FileType;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -27,8 +28,8 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 @Component
 public class UnzipAndZipComponent {
 
-    @Value("${config.xmlDir}")
-    private String xmlDir;
+    @Value("${config.rootPath}")
+    private String rootPath;
 
     public UserFilesModel UnzipAndZipFiles(UserFilesModel zipModel, File zipFile) throws IOException {
         File uuidDir = new File("D:\\" + "ZIP-" + zipModel.getId().toString().toUpperCase());
@@ -78,7 +79,7 @@ public class UnzipAndZipComponent {
         for (int i = 0; i < checkXml.length; i++) {
             if (FilenameUtils.getExtension(checkXml[i].getName()).equals("xml")) {
                 String cnpjManipulado = zipModel.getCnpj().replaceAll("[^0-9]", "");
-                String xmlFolder = xmlDir + "\\" + cnpjManipulado + "\\" + "Xmls";
+                String xmlFolder = rootPath + "\\" + zipModel.getIpServer() + "\\" + cnpjManipulado + "\\" + zipModel.getYear() + "\\" + FileType.NFe;
                 File xmlFile = new File(xmlFolder);
                 if (!xmlFile.exists()) {
                     xmlFile.mkdirs();
@@ -162,7 +163,7 @@ public class UnzipAndZipComponent {
             ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
             zipOut.putNextEntry(zipEntry);
 
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[8192];
             int length;
             while ((length = fis.read(buffer)) >= 0) {
                 zipOut.write(buffer, 0, length);
@@ -175,7 +176,7 @@ public class UnzipAndZipComponent {
         return StatusFile.ZIPPED;
     }
 
-    private Boolean checkFolderExistence(File[] fileList) {
+    public Boolean checkFolderExistence(File[] fileList) {
         for (int i = 0; i < fileList.length; i++) {
             if (fileList[i].isDirectory()) {
                 return Boolean.TRUE;
@@ -185,7 +186,7 @@ public class UnzipAndZipComponent {
     }
 
 
-    private StatusFile extractFolder(File directory, File destDir) throws IOException {
+    public StatusFile extractFolder(File directory, File destDir) throws IOException {
         File[] directoryList = readFolder(directory);
         for (File file : directoryList) {
             if (FilenameUtils.getExtension(file.getName()).equals("rar") ||
