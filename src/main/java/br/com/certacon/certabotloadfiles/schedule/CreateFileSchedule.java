@@ -29,7 +29,7 @@ public class CreateFileSchedule {
         if (!modelList.isEmpty()) {
             for (int i = 0; i < modelList.size(); i++) {
                 if (modelList.get(i).getStatus() == StatusFile.CREATED || modelList.get(i).getStatus() == StatusFile.UPDATED) {
-                    check = createFileComponent.checkFile(modelList.get(i).getPath(), modelList.get(i).getCnpjFolder(), modelList.get(i).getServerFolder());
+                    check = createFileComponent.checkFile(modelList.get(i).getPath(), modelList.get(i).getCnpjFolder(), modelList.get(i).getServerFolder(), modelList.get(i).getYearFolder());
                 }
             }
         }
