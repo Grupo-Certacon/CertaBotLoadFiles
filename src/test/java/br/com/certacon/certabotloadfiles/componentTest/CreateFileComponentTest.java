@@ -29,6 +29,7 @@ public class CreateFileComponentTest {
     UnzipAndZipComponent unzipAndZipComponent;
     @MockBean
     UserFilesRepository userFilesRepository;
+
     @Autowired
     CreateFileComponent createFileComponent;
     @Value("${config.rootPath}")
