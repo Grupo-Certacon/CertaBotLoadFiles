@@ -1,5 +1,6 @@
 package br.com.certacon.certabotloadfiles.model;
 
+import br.com.certacon.certabotloadfiles.utils.FileType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,5 +24,6 @@ public class FileTypeModel {
 
     @Column(name = "file_type")
     @Enumerated(EnumType.STRING)
-    private String fileType;
+    private FileType fileType;
+
 }
