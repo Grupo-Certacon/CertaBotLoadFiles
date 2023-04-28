@@ -78,8 +78,9 @@ public class UnzipAndZipComponent {
         File[] checkXml = descompactedDir.getParentFile().listFiles();
         for (int i = 0; i < checkXml.length; i++) {
             if (FilenameUtils.getExtension(checkXml[i].getName()).equals("xml")) {
+                String ipServerManipulado = zipModel.getIpServer().replaceAll("[^0-9]", "");
                 String cnpjManipulado = zipModel.getCnpj().replaceAll("[^0-9]", "");
-                String xmlFolder = rootPath + "\\" + zipModel.getIpServer() + "\\" + cnpjManipulado + "\\" + zipModel.getYear() + "\\" + FileType.NFe;
+                String xmlFolder = rootPath + "\\" + ipServerManipulado + "\\" + cnpjManipulado + "\\" + zipModel.getYear() + "\\" + FileType.NFe;
                 File xmlFile = new File(xmlFolder);
                 if (!xmlFile.exists()) {
                     xmlFile.mkdirs();
@@ -87,7 +88,7 @@ public class UnzipAndZipComponent {
                 moveFile(checkXml[i], Path.of(xmlFile + "\\" + checkXml[i].getName()));
             }
         }
-        File finalZip = new File(zipPath.getParentFile().getPath());
+        File finalZip = new File(zipPath.toString());
         if (zipFiles(uuidDir, finalZip).equals(StatusFile.ZIPPED)) {
             zipModel.setStatus(StatusFile.ZIPPED);
             zipModel.setPath(zipPath.getParentFile() + "\\" + uuidDir.getName() + ".zip");
