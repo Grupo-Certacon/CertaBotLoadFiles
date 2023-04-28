@@ -9,7 +9,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -21,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
@@ -29,10 +27,6 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 public class CreateFileComponent {
     private final UnzipAndZipComponent unzipAndZipComponent;
     private final UserFilesRepository userFilesRepository;
-    @Value("${config.xmlDir}")
-    private String filesDir;
-    @Value("${config.rootPath}")
-    private String rootPath;
 
     public CreateFileComponent(UnzipAndZipComponent unzipAndZipComponent, UserFilesRepository userFilesRepository) {
         this.unzipAndZipComponent = unzipAndZipComponent;
@@ -40,67 +34,83 @@ public class CreateFileComponent {
     }
 
     public Boolean checkFile(String path, String cnpj, String ipServer, String year) {
-        String nfeFolder = rootPath + "\\" + ipServer + "\\" + cnpj.replaceAll("[^0-9]", "") + "\\" + year + "\\" + FileType.NFe;
         Boolean isCreated = Boolean.FALSE;
         Path fullPath = Paths.get(path);
         try {
             File[] listFile = new File(fullPath.toString()).listFiles();
-            String spedName = "SPED-" + UUID.randomUUID();
+
             for (File value : listFile) {
                 Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(value.getName());
-                if (filePath.isPresent() && filePath.get().getStatus().equals(StatusFile.UPLOADED)) {
-                    File conludedFolder = new File(filesDir + "\\" + cnpj + "\\" + year + "\\" + "Enviados");
-                    moveFile(value, Path.of(conludedFolder + "\\" + value.getName()));
+                if (filePath.isEmpty()) {
+                    Path pathForSave = value.toPath();
+                    String mimeType = Files.probeContentType(pathForSave);
+                    String ext = FilenameUtils.getExtension(pathForSave.toString());
+                    UserFilesModel userFilesModelSaved = UserFilesModel.builder()
+                            .cnpj(cnpj)
+                            .ipServer(ipServer)
+                            .mimeType(mimeType)
+                            .fileName(value.getName())
+                            .path(value.getPath())
+                            .year(year)
+                            .extension(ext)
+                            .status(StatusFile.CREATED)
+                            .createdAt(new Date())
+                            .build();
+                    if (value.isDirectory() && value.getName().equals(FileType.EFDPadrao.toString())) {
+                        readAndExtractFromObrigationsFolder(value, FileType.EFDPadrao, "xml", userFilesModelSaved);
+                    } else if (value.isDirectory() && value.getName().equals(FileType.NFe.toString())) {
+                        readAndExtractFromObrigationsFolder(value, FileType.NFe, "txt", userFilesModelSaved);
+                    }
                 }
+            }
+            return isCreated;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-                if (!filePath.isPresent()) {
-                    if (FilenameUtils.getExtension(value.getName()).equals("rar") ||
-                            FilenameUtils.getExtension(value.getName()).equals("zip")
+    }
+
+    private File moveFile(File fileToMove, Path destiny) throws IOException {
+        Path destinyPath = Path.of(destiny + "\\" + fileToMove.getName());
+        File movedFile = Files.move(fileToMove.toPath(), destinyPath, ATOMIC_MOVE).toFile();
+        return movedFile;
+    }
+
+    private StatusFile readAndExtractFromObrigationsFolder(File folder, FileType fileType, String extension, UserFilesModel userFilesModelSaved) throws IOException {
+        File[] listFiles = folder.listFiles();
+        if (listFiles != null) {
+            for (int i = 0; i < listFiles.length; i++) {
+                Optional<UserFilesModel> filePath = userFilesRepository.findByFileName(listFiles[i].getName());
+                if (filePath.isEmpty()) {
+                    if (FilenameUtils.getExtension(listFiles[i].getName()).equals("rar") ||
+                            FilenameUtils.getExtension(listFiles[i].getName()).equals("zip")
                     ) {
-                        Path pathForSave = value.toPath();
-                        String mimeType = Files.probeContentType(pathForSave);
-                        String ext = FilenameUtils.getExtension(pathForSave.toString());
-                        UserFilesModel userFilesModelSaved = UserFilesModel.builder()
-                                .cnpj(cnpj)
-                                .ipServer(ipServer)
-                                .mimeType(mimeType)
-                                .fileName(value.getName())
-                                .path(value.getPath())
-                                .extension(ext)
-                                .status(StatusFile.CREATED)
-                                .createdAt(new Date())
-                                .build();
-                        isCreated = Boolean.TRUE;
                         userFilesRepository.save(userFilesModelSaved);
-                        UserFilesModel finalModel = unzipAndZipComponent.UnzipAndZipFiles(userFilesModelSaved, value);
+                        UserFilesModel finalModel = unzipAndZipComponent.UnzipAndZipFiles(userFilesModelSaved, listFiles[i]);
                         userFilesRepository.delete(userFilesModelSaved);
                         userFilesRepository.save(finalModel);
-                    } else if (FilenameUtils.getExtension(value.getName()).equals("txt")) {
-                        File spedFolder = new File(rootPath + "\\" + ipServer + "\\" + cnpj + "\\" + year + "\\" + spedName);
-                        if (!spedFolder.exists()) spedFolder.mkdirs();
-                        moveFile(value, spedFolder.toPath());
-                    } else if (FilenameUtils.getExtension(value.getName()).equals("xml")) {
-                        File xmlFile = new File(nfeFolder);
+                    } else if (FilenameUtils.getExtension(listFiles[i].getName()).equals(extension)) {
+                        File xmlFile = new File(folder.getParentFile().toString() + "\\" + fileType.toString());
                         if (!xmlFile.exists()) xmlFile.mkdirs();
-                        moveFile(value, Path.of(nfeFolder));
-                    } else if (value.isDirectory()) {
-                        unzipAndZipComponent.extractFolder(value, null);
-                        if (unzipAndZipComponent.checkFolderExistence(value.getParentFile().listFiles()).equals(Boolean.TRUE)) {
-                            File[] parentList = value.getParentFile().listFiles();
-                            for (int i = 0; i < parentList.length; i++) {
-                                if (parentList[i].isDirectory())
-                                    unzipAndZipComponent.extractFolder(parentList[i], null);
+                        moveFile(listFiles[i], Path.of(folder + "\\" + listFiles[i].getName()));
+                    } else if (listFiles[i].isDirectory()) {
+                        unzipAndZipComponent.extractFolder(listFiles[i], null);
+                        if (unzipAndZipComponent.checkFolderExistence(listFiles[i].getParentFile().listFiles()).equals(Boolean.TRUE)) {
+                            File[] parentList = listFiles[i].getParentFile().listFiles();
+                            for (int j = 0; j < parentList.length; j++) {
+                                if (parentList[j].isDirectory())
+                                    unzipAndZipComponent.extractFolder(parentList[j], null);
                             }
                         }
-                        String folderPath = value.getPath();
+                        String folderPath = listFiles[i].getPath();
                         // nome do arquivo zip que você deseja criar
-                        String zipFilePath = value.getPath() + ".zip";
+                        String zipFilePath = listFiles[i].getPath() + ".zip";
                         // cria o arquivo zip
                         File zipFile = new File(zipFilePath);
                         ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(new FileOutputStream(zipFile));
                         // pega os arquivos da pasta e adiciona ao arquivo zip
-                        File folder = new File(folderPath);
-                        File[] files = folder.listFiles();
+                        File folder1 = new File(folderPath);
+                        File[] files = folder1.listFiles();
                         for (File file : files) {
                             ZipArchiveEntry entry = new ZipArchiveEntry(file.getName());
                             zipOut.putArchiveEntry(entry);
@@ -113,16 +123,16 @@ public class CreateFileComponent {
                             in.close();
                             zipOut.closeArchiveEntry();
                         }
-                        FileUtils.cleanDirectory(folder);
-                        FileUtils.deleteDirectory(folder);
+                        FileUtils.cleanDirectory(folder1);
+                        FileUtils.deleteDirectory(folder1);
                         // fecha o arquivo zip
                         zipOut.close();
                         Path pathForSave = zipFile.toPath();
                         String mimeType = Files.probeContentType(pathForSave);
                         String ext = FilenameUtils.getExtension(pathForSave.toString());
-                        UserFilesModel userFilesModelSaved = UserFilesModel.builder()
-                                .cnpj(cnpj)
-                                .ipServer(ipServer)
+                        UserFilesModel newUserFileForSave = UserFilesModel.builder()
+                                .cnpj(userFilesModelSaved.getCnpj())
+                                .ipServer(userFilesModelSaved.getIpServer())
                                 .mimeType(mimeType)
                                 .fileName(zipFile.getName())
                                 .path(zipFile.toPath().toString())
@@ -130,31 +140,11 @@ public class CreateFileComponent {
                                 .status(StatusFile.CREATED)
                                 .createdAt(new Date())
                                 .build();
-                        isCreated = Boolean.TRUE;
-                        userFilesRepository.save(userFilesModelSaved);
+                        userFilesRepository.save(newUserFileForSave);
                     }
                 }
             }
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-        return isCreated;
+        return StatusFile.READY;
     }
-
-    private File createFolder(Path path, String folderName) throws IOException {
-        File newPath = Path.of(path + "\\" + folderName).toFile();
-        if (!newPath.exists()) {
-            newPath.mkdirs();
-        }
-        return newPath;
-    }
-
-    private File moveFile(File fileToMove, Path destiny) throws IOException {
-        Path destinyPath = Path.of(destiny + "\\" + fileToMove.getName());
-        File movedFile = Files.move(fileToMove.toPath(), destinyPath, ATOMIC_MOVE).toFile();
-        return movedFile;
-    }
-
 }
