@@ -41,12 +41,9 @@ public class PathCreationComponent {
                 Path serverPath = Paths.get(rootPath + server);
                 Path cnpjPath = Paths.get(serverPath + "\\" + cnpj);
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
-                if (!serverPath.toFile().isDirectory() || !cnpjPath.toFile().isDirectory() || !yearPath.toFile().isDirectory()) {
+                if (!yearPath.toFile().exists()) {
                     yearPath.toFile().mkdirs();
                     List<FileTypeModel> files = fileTypeRepository.findAll();
-                    // Path efdPath = Path.of(yearPath + "\\" + FileType.EFDPadrao);
-                    // efdPath.toFile().mkdirs();
-                    // Path nfePath = Path.of(yearPath + "\\" + FileType.NFe);
                     for (int i = 0; i < files.size(); i++) {
                         Path filePath = Path.of(yearPath + "\\" + files.get(i).getFileType());
                         filePath.toFile().mkdirs();
