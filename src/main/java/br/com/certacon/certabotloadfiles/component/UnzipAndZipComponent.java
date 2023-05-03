@@ -1,7 +1,6 @@
 package br.com.certacon.certabotloadfiles.component;
 
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
-import br.com.certacon.certabotloadfiles.utils.FileType;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -29,11 +28,19 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 @Component
 public class UnzipAndZipComponent {
 
+    @Value("${config.archivedFilesDir}")
+    private final String archivedFilesDir;
+    @Value("${config.zipFilesDir}")
+    private final String zipFilesDir;
 
+    public UnzipAndZipComponent(@Value("${config.archivedFilesDir}")String archivedFilesDir, @Value("${config.zipFilesDir}")String zipFilesDir) {
+        this.archivedFilesDir = archivedFilesDir;
+        this.zipFilesDir = zipFilesDir;
+    }
     public UserFilesModel UnzipAndZipFiles(UserFilesModel zipModel, File zipFile) throws IOException {
-        File uuidDir = new File("D:\\" + "ZIP-" + zipModel.getId().toString().toUpperCase());
-        File compactedDir = new File(uuidDir + "\\" + "Compactados");
-        File descompactedDir = new File(uuidDir + "\\" + "Descompactados");
+        File uuidDir = new File(zipFilesDir + "ZIP-" + zipModel.getId().toString().toUpperCase());
+        File compactedDir = new File(uuidDir + File.separator + "Compactados");
+        File descompactedDir = new File(uuidDir + File.separator + "Descompactados");
 
         if (!uuidDir.exists()) createDir(uuidDir);
 
@@ -44,10 +51,10 @@ public class UnzipAndZipComponent {
         File zipPath = new File(zipModel.getPath());
         if (FilenameUtils.getExtension(zipFile.getName()).equals("rar") && zipModel.getStatus().equals(StatusFile.CREATED) ||
                 FilenameUtils.getExtension(zipFile.getName()).equals("zip") && zipModel.getStatus().equals(StatusFile.CREATED)) {
-            StatusFile movedStatus = moveFile(zipFile, Path.of(compactedDir + "\\" + zipFile.getName()));
+            StatusFile movedStatus = moveFile(zipFile, Path.of(compactedDir + File.separator + zipFile.getName()));
             if (movedStatus.equals(StatusFile.MOVED)) {
                 zipModel.setStatus(StatusFile.MOVED);
-                File movedFile = new File(compactedDir + "\\" + zipFile.getName());
+                File movedFile = new File(compactedDir + File.separator + zipFile.getName());
                 StatusFile zipStatus = unzipFile(movedFile, Path.of(descompactedDir.getPath()));
                 zipModel.setStatus(zipStatus);
             }
@@ -80,21 +87,21 @@ public class UnzipAndZipComponent {
             if (FilenameUtils.getExtension(checkXml[i].getName()).equals("xml")) {
 
                 File xmlFile = checkXml[i].getParentFile();
-                File xmlNewFolder = new File(xmlFile + "\\" + "XMLS-" + zipModel.getId().toString().toUpperCase());
+                File xmlNewFolder = new File(xmlFile + File.separator + "XMLS-" + zipModel.getId().toString().toUpperCase());
                 if (!xmlFile.exists() ) {
                     xmlFile.mkdirs();
                 }
                 if (!xmlNewFolder.exists()) xmlNewFolder.mkdirs();
-                moveFile(checkXml[i], Path.of(xmlNewFolder + "\\" + checkXml[i].getName()));
+                moveFile(checkXml[i], Path.of(xmlNewFolder + File.separator + checkXml[i].getName()));
 
             } else if (FilenameUtils.getExtension(checkXml[i].getName()).equals("txt")) {
                     File efdFile = checkXml[i].getParentFile();
-                    File EfdNewFolder = new File(efdFile + "\\" + "EFD-" + zipModel.getId().toString().toUpperCase());
+                    File EfdNewFolder = new File(efdFile + File.separator + "EFD-" + zipModel.getId().toString().toUpperCase());
                     if (!efdFile.exists()) {
                         efdFile.mkdirs();
                     }
                     if (!EfdNewFolder.exists()) EfdNewFolder.mkdirs();
-                    moveFile(checkXml[i], Path.of(EfdNewFolder + "\\" + checkXml[i].getName()));
+                    moveFile(checkXml[i], Path.of(EfdNewFolder + File.separator + checkXml[i].getName()));
             }
         }
         File[] fileTypeDirs = uuidDir.listFiles();
@@ -103,14 +110,14 @@ public class UnzipAndZipComponent {
             if(fileTypeDirs[i].getName().equals("EFD-" + zipModel.getId().toString().toUpperCase())){
                 File finalZipEFD = finalZip.getParentFile();
                 zipFiles(fileTypeDirs[i], finalZipEFD);
-                zipModel.setPath(finalZipEFD + "\\" + fileTypeDirs[i].getName() + ".zip");
+                zipModel.setPath(finalZipEFD + File.separator + fileTypeDirs[i].getName() + ".zip");
                 zipModel.setStatus(StatusFile.UPDATED);
                 zipModel.setFileName(fileTypeDirs[i].getName() + ".zip");
                 zipModel.setCreatedAt(new Date());
             } else if(fileTypeDirs[i].getName().equals("XMLS-" + zipModel.getId().toString().toUpperCase())){
                 String server = zipModel.getIpServer().replaceAll("[^0-9]", "");
                 String cnpj = zipModel.getCnpj().replaceAll("[^0-9]", "");
-                File finalZipEFD = new File("D:\\Arquivados\\" + server + "\\" + cnpj + "\\" + zipModel.getYear());
+                File finalZipEFD = new File(archivedFilesDir + server + File.separator + cnpj + File.separator + zipModel.getYear());
                 if(!finalZipEFD.exists()) finalZipEFD.mkdirs();
                 zipFiles(fileTypeDirs[i], finalZipEFD);
             }
@@ -173,7 +180,7 @@ public class UnzipAndZipComponent {
 
     private StatusFile zipFiles(File descompactedDir, File destiny) throws IOException {
         File[] descompactedList = readFolder(descompactedDir);
-        final FileOutputStream fos = new FileOutputStream(Paths.get(destiny.getPath()).toAbsolutePath() + "\\" + descompactedDir.getName() + ".zip");
+        final FileOutputStream fos = new FileOutputStream(Paths.get(destiny.getPath()).toAbsolutePath() + File.separator + descompactedDir.getName() + ".zip");
         ZipOutputStream zipOut = new ZipOutputStream(fos);
 
         for (File srcFile : descompactedList) {
@@ -211,7 +218,7 @@ public class UnzipAndZipComponent {
             if (FilenameUtils.getExtension(file.getName()).equals("rar") ||
                     FilenameUtils.getExtension(file.getName()).equals("zip")
             ) {
-                moveFile(file, Path.of(destDir + "\\" + file.getName()));
+                moveFile(file, Path.of(destDir + File.separator + file.getName()));
             } else {
                 Path parentFolder = Path.of(directory.getParentFile().getPath());
                 Path filePath = Path.of(file.getPath());

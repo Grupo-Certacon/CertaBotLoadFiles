@@ -8,6 +8,7 @@ import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -38,8 +39,8 @@ public class PathCreationComponent {
                 String cnpj = result.getCnpjFolder().replaceAll("[^0-9]", "");
                 String year = result.getYearFolder();
                 Path serverPath = Paths.get(rootPath + server);
-                Path cnpjPath = Paths.get(serverPath + "\\" + cnpj);
-                Path yearPath = Paths.get(cnpjPath + "\\" + year);
+                Path cnpjPath = Paths.get(serverPath + File.separator + cnpj);
+                Path yearPath = Paths.get(cnpjPath + File.separator + year);
                 if (!yearPath.toFile().exists()) {
                     yearPath.toFile().mkdirs();
 

@@ -21,3 +21,4 @@ config:
   dockerPathDownload: http://192.168.1.64:8094/LoadFile/downloads/
   archivedFilesDir: D:\Arquivados\
   sentFilesDir: D:\Enviados\
+  zipFilesDir: D:\
