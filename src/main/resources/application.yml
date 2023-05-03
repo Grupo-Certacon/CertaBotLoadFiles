@@ -16,7 +16,8 @@ spring:
     password: gigi1704
 
 config:
-  rootPath: D:\loadFileData\
+  rootPath: D:\Carregamento\
   downloadPath: /home/selenium/Downloads
-  dockerPathDownload: http://192.168.0.131:8094/LoadFile/downloads/
-  sentFilesDir: D:\Arquivos\
+  dockerPathDownload: http://192.168.1.64:8094/LoadFile/downloads/
+  archivedFilesDir: D:\Arquivados\
+  sentFilesDir: D:\Enviados\

@@ -70,7 +70,7 @@ public class PathCreationComponentTest {
 
     @BeforeEach
     void setUp() {
-        pathCreationComponent = new PathCreationComponent(fileTypeRepository, rootPath, loadFilesRepository);
+        pathCreationComponent = new PathCreationComponent(rootPath, loadFilesRepository);
     }
 
 }

@@ -8,6 +8,7 @@ import br.com.certacon.certabotloadfiles.vo.ArquivoEfdModelVO;
 import br.com.certacon.certabotloadfiles.vo.ArquivoEfdVO;
 import br.com.certacon.certabotloadfiles.vo.ProcessFileModelVO;
 import br.com.certacon.certabotloadfiles.vo.ProcessFileVO;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -28,8 +29,6 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 @Component
 public class UnzipAndZipComponent {
 
-    @Value("${config.rootPath}")
-    private String rootPath;
 
     public UserFilesModel UnzipAndZipFiles(UserFilesModel zipModel, File zipFile) throws IOException {
         File uuidDir = new File("D:\\" + "ZIP-" + zipModel.getId().toString().toUpperCase());
@@ -76,30 +75,49 @@ public class UnzipAndZipComponent {
         extractFolder(descompactedDir, descompactedDir.getParentFile());
 
         File[] checkXml = descompactedDir.getParentFile().listFiles();
+
         for (int i = 0; i < checkXml.length; i++) {
             if (FilenameUtils.getExtension(checkXml[i].getName()).equals("xml")) {
-                String ipServerManipulado = zipModel.getIpServer().replaceAll("[^0-9]", "");
-                String cnpjManipulado = zipModel.getCnpj().replaceAll("[^0-9]", "");
-                String xmlFolder = rootPath + "\\" + ipServerManipulado + "\\" + cnpjManipulado + "\\" + zipModel.getYear() + "\\" + FileType.NFe;
-                File xmlFile = new File(xmlFolder);
-                if (!xmlFile.exists()) {
+
+                File xmlFile = checkXml[i].getParentFile();
+                File xmlNewFolder = new File(xmlFile + "\\" + "XMLS-" + zipModel.getId().toString().toUpperCase());
+                if (!xmlFile.exists() ) {
                     xmlFile.mkdirs();
                 }
-                moveFile(checkXml[i], Path.of(xmlFile + "\\" + checkXml[i].getName()));
+                if (!xmlNewFolder.exists()) xmlNewFolder.mkdirs();
+                moveFile(checkXml[i], Path.of(xmlNewFolder + "\\" + checkXml[i].getName()));
+
+            } else if (FilenameUtils.getExtension(checkXml[i].getName()).equals("txt")) {
+                    File efdFile = checkXml[i].getParentFile();
+                    File EfdNewFolder = new File(efdFile + "\\" + "EFD-" + zipModel.getId().toString().toUpperCase());
+                    if (!efdFile.exists()) {
+                        efdFile.mkdirs();
+                    }
+                    if (!EfdNewFolder.exists()) EfdNewFolder.mkdirs();
+                    moveFile(checkXml[i], Path.of(EfdNewFolder + "\\" + checkXml[i].getName()));
             }
         }
+        File[] fileTypeDirs = uuidDir.listFiles();
         File finalZip = new File(zipPath.toString());
-        if (zipFiles(uuidDir, finalZip).equals(StatusFile.ZIPPED)) {
-            zipModel.setStatus(StatusFile.ZIPPED);
-            zipModel.setPath(zipPath.getParentFile() + "\\" + uuidDir.getName() + ".zip");
-            zipModel.setExtension("zip");
-            zipModel.setFileName(uuidDir.getName() + ".zip");
-            zipModel.setStatus(StatusFile.UPDATED);
-            FileUtils.forceDelete(uuidDir);
-        } else {
-            throw new RuntimeException("Algo deu errado!");
+        for (int i = 0; i < fileTypeDirs.length; i++) {
+            if(fileTypeDirs[i].getName().equals("EFD-" + zipModel.getId().toString().toUpperCase())){
+                File finalZipEFD = finalZip.getParentFile();
+                zipFiles(fileTypeDirs[i], finalZipEFD);
+                zipModel.setPath(finalZipEFD + "\\" + fileTypeDirs[i].getName() + ".zip");
+                zipModel.setStatus(StatusFile.UPDATED);
+                zipModel.setFileName(fileTypeDirs[i].getName() + ".zip");
+                zipModel.setCreatedAt(new Date());
+            } else if(fileTypeDirs[i].getName().equals("XMLS-" + zipModel.getId().toString().toUpperCase())){
+                String server = zipModel.getIpServer().replaceAll("[^0-9]", "");
+                String cnpj = zipModel.getCnpj().replaceAll("[^0-9]", "");
+                File finalZipEFD = new File("D:\\Arquivados\\" + server + "\\" + cnpj + "\\" + zipModel.getYear());
+                if(!finalZipEFD.exists()) finalZipEFD.mkdirs();
+                zipFiles(fileTypeDirs[i], finalZipEFD);
+            }
 
+            FileUtils.forceDelete(fileTypeDirs[i]);
         }
+            FileUtils.forceDelete(uuidDir);
         return zipModel;
     }
 

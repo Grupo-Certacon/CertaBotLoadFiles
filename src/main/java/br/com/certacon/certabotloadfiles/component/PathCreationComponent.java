@@ -17,13 +17,12 @@ import java.util.UUID;
 @Component
 public class PathCreationComponent {
 
-    private final FileTypeRepository fileTypeRepository;
+
     private final LoadFilesRepository loadFilesRepository;
     @Value("${config.rootPath}")
     private String rootPath;
 
-    public PathCreationComponent(FileTypeRepository fileTypeRepository, @Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
-        this.fileTypeRepository = fileTypeRepository;
+    public PathCreationComponent(@Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
         this.loadFilesRepository = loadFilesRepository;
         this.rootPath = rootPath;
     }
@@ -43,11 +42,7 @@ public class PathCreationComponent {
                 Path yearPath = Paths.get(cnpjPath + "\\" + year);
                 if (!yearPath.toFile().exists()) {
                     yearPath.toFile().mkdirs();
-                    List<FileTypeModel> files = fileTypeRepository.findAll();
-                    for (int i = 0; i < files.size(); i++) {
-                        Path filePath = Path.of(yearPath + "\\" + files.get(i).getFileType());
-                        filePath.toFile().mkdirs();
-                    }
+
                     result.setPath(yearPath.toString());
                     result.setStatus(StatusFile.CREATED);
                     isCreated = Boolean.TRUE;
