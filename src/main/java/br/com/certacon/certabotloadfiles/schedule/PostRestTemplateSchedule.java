@@ -48,6 +48,7 @@ public class PostRestTemplateSchedule {
                                 .id_arquivo(result.getId().toString())
                                 .usuario("giovanni.andrade@certacon.com.br")
                                 .senha("1")
+                                .caminho_de_arquivo(modelList.get(i).getPath())
                                 .caminho_de_destino_download(downloadPath)
                                 .url_de_upload("http://" + modelList.get(i).getIpServer() + "/tributario")
                                 .url_de_download(dockerPathDownload + modelList.get(i).getId().toString())

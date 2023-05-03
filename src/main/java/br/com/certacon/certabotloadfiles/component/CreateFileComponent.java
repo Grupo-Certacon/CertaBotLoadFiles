@@ -42,7 +42,7 @@ public class CreateFileComponent {
               /*  if(filePath.isPresent() && filePath.get().getStatus().equals(StatusFile.UPLOADED)){
                     String serverManipulado = ipServer.replaceAll("[^0-9]", "");
                     String cnpjManipulado = cnpj.replaceAll("[^0-9]", "");
-                    File sentFile = new File("D:\\Enviados\\" + serverManipulado + File.separator +cnpjManipulado + File.separator + year);
+                    File sentFile = new File("D:\\Enviados\\" + serverManipulado + File.separator + cnpjManipulado + File.separator + year);
                     if (!sentFile.exists()) sentFile.mkdirs();
                     moveFile(value, sentFile.toPath());
                     filePath.get().setPath(sentFile.getPath());

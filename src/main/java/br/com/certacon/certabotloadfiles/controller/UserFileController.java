@@ -1,6 +1,7 @@
 package br.com.certacon.certabotloadfiles.controller;
 
 import br.com.certacon.certabotloadfiles.exception.MessageExceptionHandler;
+import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.service.UserFilesService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,24 @@ public class UserFileController {
     })
     public ResponseEntity<UserFilesModel> getById(@PathVariable UUID id) {
         UserFilesModel model = userFilesService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(model);
+    }
+    @PutMapping
+    @Operation(description = "Atualiza um UserFile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "UserFile atualizado!", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = UserFilesModel.class))}),
+            @ApiResponse(responseCode = "400", description = "Informação inserida esta errada",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MessageExceptionHandler.class))}),
+            @ApiResponse(responseCode = "404", description = "UserFile não encontrado",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MessageExceptionHandler.class))}),
+            @ApiResponse(responseCode = "500", description = "Erro no servidor", content = {@Content(mediaType = "application/json",
+                    schema = @Schema(implementation = MessageExceptionHandler.class))})
+    })
+    public ResponseEntity<UserFilesModel> update(@RequestBody UserFilesModel userFilesModel){
+        UserFilesModel model = userFilesService.update(userFilesModel);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
 

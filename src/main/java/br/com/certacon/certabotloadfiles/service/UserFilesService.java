@@ -1,10 +1,13 @@
 package br.com.certacon.certabotloadfiles.service;
 
+import br.com.certacon.certabotloadfiles.dto.LoadFilesDto;
+import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,5 +42,22 @@ public class UserFilesService {
             throw new RuntimeException("Objeto(s) não encontrados!");
         }
         return modelList;
+    }
+
+    public UserFilesModel update(UserFilesModel userFilesModel) {
+        UserFilesModel model;
+        Optional<UserFilesModel> optionalModel = userFilesRepository.findById(userFilesModel.getId());
+        if (!optionalModel.isEmpty()) {
+            model = optionalModel.get();
+            model.setPath(model.getPath());
+            model.setCreatedAt(model.getCreatedAt());
+            model.setFileName(model.getFileName());
+            model.setId(model.getId());
+            model.setStatus(StatusFile.UPDATED);
+            userFilesRepository.save(model);
+            return model;
+        } else {
+            throw new RuntimeException("Folder não encontrado");
+        }
     }
 }
