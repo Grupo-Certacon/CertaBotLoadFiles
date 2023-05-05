@@ -8,7 +8,6 @@ import br.com.certacon.certabotloadfiles.vo.ArquivoEfdModelVO;
 import br.com.certacon.certabotloadfiles.vo.ArquivoEfdVO;
 import br.com.certacon.certabotloadfiles.vo.ProcessFileModelVO;
 import br.com.certacon.certabotloadfiles.vo.ProcessFileVO;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -33,7 +32,7 @@ public class PostRestTemplateSchedule {
     @Scheduled(fixedRate = 30000, initialDelay = 90000)
     public boolean postRest() {
         List<UserFilesModel> modelList = userFilesRepository.findAll();
-        Boolean check = Boolean.FALSE;
+        boolean check = Boolean.FALSE;
         if (modelList.size() > 0) {
             for (int i = 0; i < modelList.size(); i++) {
                 modelList.get(i).getId().toString();
