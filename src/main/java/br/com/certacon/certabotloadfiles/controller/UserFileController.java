@@ -1,7 +1,6 @@
 package br.com.certacon.certabotloadfiles.controller;
 
 import br.com.certacon.certabotloadfiles.exception.MessageExceptionHandler;
-import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.service.UserFilesService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
-@RequestMapping("files")
+@RequestMapping("userFiles")
 public class UserFileController {
     private final UserFilesService userFilesService;
 
@@ -44,6 +43,7 @@ public class UserFileController {
         UserFilesModel model = userFilesService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
+
     @PutMapping
     @Operation(description = "Atualiza um UserFile")
     @ApiResponses(value = {
@@ -58,7 +58,7 @@ public class UserFileController {
             @ApiResponse(responseCode = "500", description = "Erro no servidor", content = {@Content(mediaType = "application/json",
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
-    public ResponseEntity<UserFilesModel> update(@RequestBody UserFilesModel userFilesModel){
+    public ResponseEntity<UserFilesModel> update(@RequestBody UserFilesModel userFilesModel) {
         UserFilesModel model = userFilesService.update(userFilesModel);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
