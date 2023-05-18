@@ -10,11 +10,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-public class ArquivoEfdModelVO {
+public class FileEntityVO {
     private UUID id;
     private Date createdAt;
     private String name;
-    private String clientCnpj;
+    private String cnpj;
+    private String ipServer;
+    private String filePath;
     private Date updatedAt;
-    private Date processedAt;
+
 }
