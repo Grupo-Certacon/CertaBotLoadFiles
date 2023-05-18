@@ -1,17 +1,13 @@
 package br.com.certacon.certabotloadfiles.component;
 
-import br.com.certacon.certabotloadfiles.model.FileTypeModel;
+import br.com.certacon.certabotloadfiles.helper.PathCreationHelper;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
-import br.com.certacon.certabotloadfiles.repository.FileTypeRepository;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
+import br.com.certacon.certabotloadfiles.utils.FileFunctions;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,42 +16,90 @@ public class PathCreationComponent {
 
 
     private final LoadFilesRepository loadFilesRepository;
-    @Value("${config.rootPath}")
-    private String rootPath;
+    private final PathCreationHelper helper;
 
-    public PathCreationComponent(@Value("${config.rootPath}") String rootPath, LoadFilesRepository loadFilesRepository) {
+    public PathCreationComponent(LoadFilesRepository loadFilesRepository, PathCreationHelper helper) {
         this.loadFilesRepository = loadFilesRepository;
-        this.rootPath = rootPath;
+        this.helper = helper;
     }
 
-    public Boolean checkPath(UUID id) {
-        Boolean isCreated = Boolean.FALSE;
+    public LoadFilesModel createLoadPath(UUID id) {
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
-        LoadFilesModel result = new LoadFilesModel();
-        try {
-            result = model.get();
-            if (model.isPresent()) {
-                String server = result.getServerFolder().replaceAll("[^0-9]", "");
-                String cnpj = result.getCnpjFolder().replaceAll("[^0-9]", "");
-                String year = result.getYearFolder();
-                Path serverPath = Paths.get(rootPath + server);
-                Path cnpjPath = Paths.get(serverPath + File.separator + cnpj);
-                Path yearPath = Paths.get(cnpjPath + File.separator + year);
-                if (!yearPath.toFile().exists()) {
-                    yearPath.toFile().mkdirs();
+        LoadFilesModel result;
+        result = model.get();
+        if (model.isPresent()) {
+            Path loadPath = helper.directoryCreator(result, FileFunctions.CARREGAMENTO);
 
-                    result.setPath(yearPath.toString());
-                    result.setStatus(StatusFile.CREATED);
-                    isCreated = Boolean.TRUE;
-                } else {
-                    result.setPath(yearPath.toString());
-                }
-            }
-        } catch (RuntimeException e) {
+            result.setPath(loadPath.toString());
+            result.setStatus(StatusFile.CREATEDPATH);
+        } else {
             result.setStatus(StatusFile.ERROR);
-            isCreated = Boolean.FALSE;
         }
         loadFilesRepository.save(result);
-        return isCreated;
+        return result;
+    }
+
+    public LoadFilesModel createSentPath(UUID id, FileFunctions function) {
+
+        Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
+        LoadFilesModel result;
+        result = model.get();
+        if (model.isPresent()) {
+            Path sentPath = helper.directoryCreatorWithObrigacoesAcessorias(result, function);
+            result.setPath(sentPath.toString());
+            result.setStatus(StatusFile.CREATEDSENT);
+        } else {
+            result.setStatus(StatusFile.ERROR);
+        }
+        loadFilesRepository.save(result);
+        return result;
+    }
+
+    public LoadFilesModel createArchivedPath(UUID id, FileFunctions function) {
+        Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
+
+        LoadFilesModel result;
+        result = model.get();
+        if (model.isPresent()) {
+            Path sentPath = helper.directoryCreatorWithObrigacoesAcessorias(result, function);
+            result.setPath(sentPath.toString());
+            result.setStatus(StatusFile.CREATEDARCHIVED);
+        } else {
+            result.setStatus(StatusFile.ERROR);
+        }
+        loadFilesRepository.save(result);
+        return result;
+    }
+
+    public LoadFilesModel createOrganizePath(UUID id, FileFunctions function) {
+        Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
+
+        LoadFilesModel result;
+        result = model.get();
+        if (model.isPresent()) {
+            Path sentPath = helper.directoryCreator(result, function);
+            result.setPath(sentPath.toString());
+            result.setStatus(StatusFile.CREATEDORGANIZE);
+        } else {
+            result.setStatus(StatusFile.ERROR);
+        }
+        loadFilesRepository.save(result);
+        return result;
+    }
+
+    public LoadFilesModel createOrganizedPath(UUID id, FileFunctions function) {
+        Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
+
+        LoadFilesModel result;
+        result = model.get();
+        if (model.isPresent()) {
+            Path sentPath = helper.directoryCreatorWithObrigacoesAcessorias(result, function);
+            result.setPath(sentPath.toString());
+            result.setStatus(StatusFile.CREATEDORGANIZED);
+        } else {
+            result.setStatus(StatusFile.ERROR);
+        }
+        loadFilesRepository.save(result);
+        return result;
     }
 }
