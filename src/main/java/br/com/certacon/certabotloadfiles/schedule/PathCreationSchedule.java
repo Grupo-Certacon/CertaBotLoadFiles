@@ -46,6 +46,7 @@ public class PathCreationSchedule {
                         loadFile = pathCreationComponent.createLoadPath(loadFile.getId());
                         loadFilesRepository.save(loadFile);
                         UserFilesModel filesModel = UserFilesModel.builder()
+                                .companyName(loadFile.getCompanyName())
                                 .path(loadFile.getPath())
                                 .ipServer(loadFile.getServerFolder())
                                 .createdAt(new Date())
