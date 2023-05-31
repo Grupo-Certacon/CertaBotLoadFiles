@@ -12,4 +12,5 @@ public class FileVO {
     private String filePath;
     private String ipServer;
     private String cnpj;
+    private String companyName;
 }
