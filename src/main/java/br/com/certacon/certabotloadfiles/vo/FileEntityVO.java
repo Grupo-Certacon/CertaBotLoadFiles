@@ -18,5 +18,6 @@ public class FileEntityVO {
     private String ipServer;
     private String filePath;
     private Date updatedAt;
+    private String companyName;
 
 }
