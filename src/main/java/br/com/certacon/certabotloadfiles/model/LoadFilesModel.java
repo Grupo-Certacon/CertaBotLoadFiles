@@ -35,6 +35,10 @@ public class LoadFilesModel {
     @JsonProperty(required = true, value = "pasta_ano")
     private String yearFolder;
 
+    @Column(name = "nome_empresa", nullable = false)
+    @JsonProperty(required = true, value = "nome_empresa")
+    private String companyName;
+
     @Column(name = "caminho")
     @JsonProperty(value = "caminho")
     private String path;
