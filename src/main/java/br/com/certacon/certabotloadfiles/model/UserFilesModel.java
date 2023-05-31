@@ -57,4 +57,8 @@ public class UserFilesModel {
 
     @Column(name = "year")
     private String year;
+
+    @Column(name = "nome_empresa", nullable = false)
+    @JsonProperty(value = "nome_empresa")
+    private String companyName;
 }

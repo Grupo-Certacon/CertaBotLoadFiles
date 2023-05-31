@@ -31,6 +31,7 @@ public class PostRestTemplateSchedule {
                 if (modelList.get(i).getStatus() == StatusFile.CREATED || modelList.get(i).getStatus() == StatusFile.UPDATED) {
                     FileVO fileVO = FileVO.builder()
                             .cnpj(modelList.get(i).getCnpj())
+                            .companyName(modelList.get(i).getCompanyName())
                             .ipServer(modelList.get(i).getIpServer())
                             .fileName(modelList.get(i).getFileName())
                             .filePath(modelList.get(i).getPath())
