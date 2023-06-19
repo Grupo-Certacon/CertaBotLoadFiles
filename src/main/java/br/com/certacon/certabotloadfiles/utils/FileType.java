@@ -1,5 +1,5 @@
 package br.com.certacon.certabotloadfiles.utils;
 
 public enum FileType {
-    EFDPadrao, NFe
+    EFDPadrao, NFe, CFe
 }
