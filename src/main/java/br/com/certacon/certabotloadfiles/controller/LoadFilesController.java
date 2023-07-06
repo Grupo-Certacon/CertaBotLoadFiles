@@ -3,6 +3,8 @@ package br.com.certacon.certabotloadfiles.controller;
 import br.com.certacon.certabotloadfiles.dto.LoadFilesDto;
 import br.com.certacon.certabotloadfiles.exception.MessageExceptionHandler;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
+import br.com.certacon.certabotloadfiles.schedule.PathCreationSchedule;
+import br.com.certacon.certabotloadfiles.schedule.PostRestTemplateSchedule;
 import br.com.certacon.certabotloadfiles.service.LoadFilesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,9 +25,14 @@ import java.util.UUID;
 public class LoadFilesController {
 
     private final LoadFilesService loadFilesService;
+    private final PathCreationSchedule pathCreationSchedule;
+    private final PostRestTemplateSchedule postRestTemplateSchedule;
 
-    public LoadFilesController(LoadFilesService loadFilesService) {
+    public LoadFilesController(LoadFilesService loadFilesService, PathCreationSchedule pathCreationSchedule, PostRestTemplateSchedule postRestTemplateSchedule) {
+
         this.loadFilesService = loadFilesService;
+        this.pathCreationSchedule = pathCreationSchedule;
+        this.postRestTemplateSchedule = postRestTemplateSchedule;
     }
 
     @PostMapping
@@ -40,8 +47,15 @@ public class LoadFilesController {
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
     public ResponseEntity<LoadFilesModel> create(@RequestBody LoadFilesModel loadFilesModel) {
+
         LoadFilesModel model = loadFilesService.create(loadFilesModel);
-        return ResponseEntity.status(HttpStatus.OK).body(model);
+        try {
+            pathCreationSchedule.pathCreate();
+            postRestTemplateSchedule.postRest();
+            return ResponseEntity.status(HttpStatus.OK).body(model);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -60,6 +74,7 @@ public class LoadFilesController {
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
     public ResponseEntity<List<LoadFilesModel>> getAll() {
+
         List<LoadFilesModel> modelList = loadFilesService.getAllFolders();
         return ResponseEntity.status(HttpStatus.OK).body(modelList);
     }
@@ -79,6 +94,7 @@ public class LoadFilesController {
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
     public ResponseEntity<Optional<LoadFilesModel>> getById(@PathVariable UUID id) {
+
         Optional<LoadFilesModel> model = loadFilesService.getOneFolder(id);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
@@ -98,6 +114,7 @@ public class LoadFilesController {
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
     public ResponseEntity<LoadFilesModel> update(@RequestBody LoadFilesDto loadFilesDto) {
+
         LoadFilesModel model = loadFilesService.updateFolder(loadFilesDto);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
@@ -116,7 +133,9 @@ public class LoadFilesController {
                     schema = @Schema(implementation = MessageExceptionHandler.class))})
     })
     public ResponseEntity<Boolean> delete(@PathVariable UUID id) {
+
         Boolean model = loadFilesService.deleteFolder(id);
         return ResponseEntity.status(HttpStatus.OK).body(model);
     }
+
 }
