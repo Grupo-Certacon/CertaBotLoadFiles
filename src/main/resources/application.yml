@@ -15,6 +15,38 @@ spring:
       dialect: org.hibernate.dialect.SQLServerDialect
   jmx:
     enabled: false
+  datasource:
+    url: jdbc:sqlserver://192.168.0.27;databaseName=LoadFileDev;encrypt=false;integratedSecurity=false;
+    username: giovanni.andrade
+    password: gigi1704
+
+  kafka:
+    request:
+      timeout:
+        ms: 600000
+    bootstrap-servers: certaconmsfileuploadhomolog.servicebus.windows.net:9093
+    client-id: organizer-service
+    properties:
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="Endpoint=sb://certaconmsfileuploadhomolog.servicebus.windows.net/;SharedAccessKeyName=SendReceiveOnly;SharedAccessKey=KE5yaclStCyBJz84DafoeJdAp1WlXilMi+AEhPDWKyw=";
+      sasl.mechanism: PLAIN
+      security.protocol: SASL_SSL
+    producer:
+      value-serializer: br.com.certacon.certabotloadfiles.kafka.producer.ProducerMessageSerializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: $Default
+      listener:
+        concurrency: 1
+      properties:
+        spring.json:
+          use.type.headers: false
+          value.default.type: br.com.certacon.certabotloadfiles.kafka.consumer.UploadMesssage
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual_immediate
+
+topic:
+  uploadcertabot: topic-upload-certabot
 
   datasource:
     url: jdbc:sqlserver://192.168.0.27;databaseName=LoadFileDev;encrypt=false;integratedSecurity=false;
