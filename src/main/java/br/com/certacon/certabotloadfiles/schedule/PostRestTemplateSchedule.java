@@ -6,23 +6,24 @@ import br.com.certacon.certabotloadfiles.service.PostRestTemplateService;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import br.com.certacon.certabotloadfiles.vo.FileEntityVO;
 import br.com.certacon.certabotloadfiles.vo.FileVO;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class PostRestTemplateSchedule {
+
     private final PostRestTemplateService postRestTemplateService;
     private final UserFilesRepository userFilesRepository;
 
     public PostRestTemplateSchedule(PostRestTemplateService postRestTemplateService, UserFilesRepository userFilesRepository) {
+
         this.postRestTemplateService = postRestTemplateService;
         this.userFilesRepository = userFilesRepository;
     }
 
-    @Scheduled(fixedRate = 30000, initialDelay = 45000)
     public boolean postRest() {
+
         List<UserFilesModel> modelList = userFilesRepository.findAll();
         boolean check = Boolean.FALSE;
         if (modelList.size() > 0) {
@@ -51,4 +52,5 @@ public class PostRestTemplateSchedule {
         }
         return check;
     }
+
 }
