@@ -26,7 +26,6 @@ public class PostRestTemplateService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<FileVO> requestEntity = new HttpEntity<>(fileVO, headers);
-            // Faça a solicitação POST e obtenha a resposta como uma instância de ArquivoEfdVO
             resposta = restTemplate.exchange("/files", HttpMethod.POST, requestEntity, FileEntityVO.class);
         } catch (BadRequestException e) {
             throw new BadRequestException();
