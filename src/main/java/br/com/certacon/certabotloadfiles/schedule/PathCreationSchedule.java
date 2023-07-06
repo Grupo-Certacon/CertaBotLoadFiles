@@ -2,14 +2,11 @@ package br.com.certacon.certabotloadfiles.schedule;
 
 import br.com.certacon.certabotloadfiles.component.PathCreationComponent;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
-import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
-import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.FileFunctions;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 
 @Component
@@ -17,14 +14,11 @@ public class PathCreationSchedule {
 
     private final PathCreationComponent pathCreationComponent;
     private final LoadFilesRepository loadFilesRepository;
-    private final UserFilesRepository userFilesRepository;
 
-    public PathCreationSchedule(PathCreationComponent pathCreationComponent, LoadFilesRepository loadFilesRepository,
-                                UserFilesRepository userFilesRepository) {
+    public PathCreationSchedule(PathCreationComponent pathCreationComponent, LoadFilesRepository loadFilesRepository) {
 
         this.pathCreationComponent = pathCreationComponent;
         this.loadFilesRepository = loadFilesRepository;
-        this.userFilesRepository = userFilesRepository;
     }
 
     public boolean pathCreate() {
@@ -46,17 +40,7 @@ public class PathCreationSchedule {
                     if (loadFile.getStatus() == StatusFile.CREATEDORGANIZE) {
                         loadFile = pathCreationComponent.createLoadPath(loadFile.getId());
                         loadFilesRepository.save(loadFile);
-                        UserFilesModel filesModel = UserFilesModel.builder()
-                                .companyName(loadFile.getCompanyName())
-                                .path(loadFile.getPath())
-                                .ipServer(loadFile.getServerFolder())
-                                .createdAt(new Date())
-                                .year(loadFile.getYearFolder())
-                                .fileName(loadFile.getYearFolder())
-                                .cnpj(loadFile.getCnpjFolder())
-                                .status(StatusFile.CREATED)
-                                .build();
-                        userFilesRepository.save(filesModel);
+
                     }
                 }
             });
