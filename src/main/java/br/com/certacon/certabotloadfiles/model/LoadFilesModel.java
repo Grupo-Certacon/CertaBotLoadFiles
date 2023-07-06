@@ -16,6 +16,7 @@ import java.util.UUID;
 @Setter
 @Builder
 public class LoadFilesModel {
+
     @Id
     @GenericGenerator(name = "UUIDGenerator", strategy = "uuid2")
     @GeneratedValue(generator = "UUIDGenerator")
