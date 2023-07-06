@@ -4,6 +4,7 @@ import br.com.certacon.certabotloadfiles.model.ConsumerOffsetOrganizerProcess;
 import br.com.certacon.certabotloadfiles.model.LoadFilesModel;
 import br.com.certacon.certabotloadfiles.model.UserFilesModel;
 import br.com.certacon.certabotloadfiles.repository.ConsumerOffsetOrganizerProcessRepository;
+import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.schedule.PathCreationSchedule;
 import br.com.certacon.certabotloadfiles.schedule.PostRestTemplateSchedule;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 
 @Service
@@ -30,14 +33,16 @@ public class KafkaConsumer {
     private final PathCreationSchedule pathCreationSchedule;
     private final PostRestTemplateSchedule postRestTemplateSchedule;
     private final UserFilesRepository userFilesRepository;
+    private final LoadFilesRepository loadFilesRepository;
     private final ConsumerOffsetOrganizerProcessRepository consumerOffsetOrganizerProcessRepository;
 
-    public KafkaConsumer(LoadFilesService loadFilesService, PathCreationSchedule pathCreationSchedule, PostRestTemplateSchedule postRestTemplateSchedule, UserFilesRepository userFilesRepository, ConsumerOffsetOrganizerProcessRepository consumerOffsetOrganizerProcessRepository) {
+    public KafkaConsumer(LoadFilesService loadFilesService, PathCreationSchedule pathCreationSchedule, PostRestTemplateSchedule postRestTemplateSchedule, UserFilesRepository userFilesRepository, LoadFilesRepository loadFilesRepository, ConsumerOffsetOrganizerProcessRepository consumerOffsetOrganizerProcessRepository) {
 
         this.loadFilesService = loadFilesService;
         this.pathCreationSchedule = pathCreationSchedule;
         this.postRestTemplateSchedule = postRestTemplateSchedule;
         this.userFilesRepository = userFilesRepository;
+        this.loadFilesRepository = loadFilesRepository;
 
         this.consumerOffsetOrganizerProcessRepository = consumerOffsetOrganizerProcessRepository;
     }
@@ -72,10 +77,10 @@ public class KafkaConsumer {
                     .replace("\\\"", "");
 
             String ano = divisao[5].replace("\\\"ano\\\": \\\"", "")
-                    .replace("\"}", "");
+                    .replace("\\\"", "");
 
-            String server = divisao[6].replace("\\\"servidor\\\":", "")
-                    .replace("\"}", "");
+            String server = divisao[6].replace("\\\"servidor\\\": \\\"", "")
+                    .replace("\\\"}\"}", "");
 
             log.info(consumerRecord.value().toString());
             log.info(caminho);
@@ -89,18 +94,18 @@ public class KafkaConsumer {
                     .companyName(nome)
                     .serverFolder(server)
                     .yearFolder(ano)
-                    .path(caminho)
                     .cnpjFolder(cnpj)
                     .build();
-
-            loadFilesService.create(model);
-
+            LoadFilesModel result = loadFilesService.create(model);
             pathCreationSchedule.pathCreate();
+            Path source = Path.of(caminho);
+            Path pathForCopy = Path.of(loadFilesRepository.findById(result.getId()).get().getPath() + File.separator + source.getFileName());
+            Files.copy(source, pathForCopy);
 
             File caminhoParent = new File(caminho).getParentFile();
             UserFilesModel filesModel = UserFilesModel.builder()
                     .companyName(nome)
-                    .path(caminhoParent.getPath())
+                    .path(pathForCopy.getParent().toString())
                     .ipServer(server)
                     .createdAt(new Date())
                     .year(ano)

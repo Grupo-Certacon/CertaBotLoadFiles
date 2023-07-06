@@ -19,11 +19,13 @@ public class PathCreationComponent {
     private final PathCreationHelper helper;
 
     public PathCreationComponent(LoadFilesRepository loadFilesRepository, PathCreationHelper helper) {
+
         this.loadFilesRepository = loadFilesRepository;
         this.helper = helper;
     }
 
     public LoadFilesModel createLoadPath(UUID id) {
+
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
         LoadFilesModel result;
         result = model.get();
@@ -56,6 +58,7 @@ public class PathCreationComponent {
     }
 
     public LoadFilesModel createArchivedPath(UUID id, FileFunctions function) {
+
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
 
         LoadFilesModel result;
@@ -72,6 +75,7 @@ public class PathCreationComponent {
     }
 
     public LoadFilesModel createOrganizePath(UUID id, FileFunctions function) {
+
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
 
         LoadFilesModel result;
@@ -88,6 +92,7 @@ public class PathCreationComponent {
     }
 
     public LoadFilesModel createOrganizedPath(UUID id, FileFunctions function) {
+
         Optional<LoadFilesModel> model = loadFilesRepository.findById(id);
 
         LoadFilesModel result;
@@ -102,4 +107,5 @@ public class PathCreationComponent {
         loadFilesRepository.save(result);
         return result;
     }
+
 }

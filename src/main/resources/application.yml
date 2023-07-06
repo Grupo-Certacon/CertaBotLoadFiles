@@ -55,8 +55,7 @@ topic:
 
 config:
   downloadPath: /home/selenium/Downloads
-  dockerPathDownload: http://192.168.1.84:8094/LoadFile/downloads/
-  archivedFilesDir: D:\ARQUIVADOS\
-  sentFilesDir: D:\ENVIADOS\
-  rootDir: D:\
-  restBuilder: http://192.168.1.84:8068/CertaBotOrganize
+  archivedFilesDir: /tmp/ARQUIVADOS/
+  sentFilesDir: /tmp/ENVIADOS/
+  rootDir: /tmp/
+  restBuilder: http://192.168.0.26:9154/CertaBotOrganize
