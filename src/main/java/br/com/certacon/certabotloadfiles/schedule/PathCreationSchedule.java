@@ -7,7 +7,6 @@ import br.com.certacon.certabotloadfiles.repository.LoadFilesRepository;
 import br.com.certacon.certabotloadfiles.repository.UserFilesRepository;
 import br.com.certacon.certabotloadfiles.utils.FileFunctions;
 import br.com.certacon.certabotloadfiles.utils.StatusFile;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -15,19 +14,21 @@ import java.util.List;
 
 @Component
 public class PathCreationSchedule {
+
     private final PathCreationComponent pathCreationComponent;
     private final LoadFilesRepository loadFilesRepository;
     private final UserFilesRepository userFilesRepository;
 
     public PathCreationSchedule(PathCreationComponent pathCreationComponent, LoadFilesRepository loadFilesRepository,
                                 UserFilesRepository userFilesRepository) {
+
         this.pathCreationComponent = pathCreationComponent;
         this.loadFilesRepository = loadFilesRepository;
         this.userFilesRepository = userFilesRepository;
     }
 
-    @Scheduled(fixedRate = 30000)
     public boolean pathCreate() {
+
         List<LoadFilesModel> modelList = loadFilesRepository.findAll();
         if (!modelList.isEmpty()) {
             modelList.forEach(loadFile -> {
@@ -63,4 +64,5 @@ public class PathCreationSchedule {
         }
         return Boolean.FALSE;
     }
+
 }
