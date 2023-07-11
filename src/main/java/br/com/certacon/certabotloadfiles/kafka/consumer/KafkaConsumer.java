@@ -64,31 +64,26 @@ public class KafkaConsumer {
             consumerOffsetOrganizerProcessRepository.save(obj);
 
             String[] divisao = consumerRecord.value().toString().split(",");
-            String idUsuario = divisao[0].replace("{\"idUsuario\":", "")
-                    .replace("\"", "");
 
             String caminho = divisao[1].replace("\"arquivo\":\"{ \\\"caminho\\\": \\\"", "")
-                    .replace("\\\"", "");
+                    .replace("\\\"", "")
+                    .replace(" ", "");
 
             String cnpj = divisao[2].replace("\\\"cnpj\\\": \\\"", "")
-                    .replace("\\\"", "");
+                    .replace("\\\"", "")
+                    .replace(" ", "");
 
             String nome = divisao[3].replace("\\\"nome\\\": \\\"", "")
-                    .replace("\\\"", "");
+                    .replace("\\\"", "")
+                    .replaceFirst(" ", "");
 
             String ano = divisao[5].replace("\\\"ano\\\": \\\"", "")
-                    .replace("\\\"", "");
+                    .replace("\\\"", "")
+                    .replace(" ", "");
 
             String server = divisao[6].replace("\\\"servidor\\\": \\\"", "")
-                    .replace("\\\"}\"}", "");
-
-            log.info(consumerRecord.value().toString());
-            log.info(caminho);
-            log.info(idUsuario);
-            log.info(cnpj);
-            log.info(nome);
-            log.info(ano);
-            log.info(server);
+                    .replace("\\\"}\"}", "")
+                    .replace(" ", "");
 
             LoadFilesModel model = LoadFilesModel.builder()
                     .companyName(nome)
@@ -102,15 +97,16 @@ public class KafkaConsumer {
             Path pathForCopy = Path.of(loadFilesRepository.findById(result.getId()).get().getPath() + File.separator + source.getFileName());
             Files.copy(source, pathForCopy);
 
-            File caminhoParent = new File(caminho).getParentFile();
+            File caminhoFile = new File(caminho);
             UserFilesModel filesModel = UserFilesModel.builder()
                     .companyName(nome)
                     .path(pathForCopy.getParent().toString())
                     .ipServer(server)
                     .createdAt(new Date())
                     .year(ano)
-                    .fileName(caminhoParent.getName())
+                    .fileName(caminhoFile.getParentFile().getName())
                     .cnpj(cnpj)
+                    .originalName(caminhoFile.getName())
                     .status(StatusFile.CREATED)
                     .build();
             userFilesRepository.save(filesModel);

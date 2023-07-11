@@ -1,5 +1,5 @@
 server:
-  port: 8094
+  port: 9094
   servlet:
     context-path: /LoadFile
 
@@ -15,23 +15,22 @@ spring:
       dialect: org.hibernate.dialect.SQLServerDialect
   jmx:
     enabled: false
+
   datasource:
-    url: jdbc:sqlserver://192.168.0.27;databaseName=LoadFileDev;encrypt=false;integratedSecurity=false;
-    username: giovanni.andrade
-    password: gigi1704
+    url: jdbc:sqlserver://192.168.0.39;database=LoadFileDev;encrypt=false;
+    username: sa
+    password: Makron3254!@
 
   kafka:
     request:
       timeout:
         ms: 600000
-    bootstrap-servers: certaconmsfileuploadhomolog.servicebus.windows.net:9093
+    bootstrap-servers: certaconmsfileuploadprod.servicebus.windows.net:9093
     client-id: organizer-service
     properties:
-      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="Endpoint=sb://certaconmsfileuploadhomolog.servicebus.windows.net/;SharedAccessKeyName=SendReceiveOnly;SharedAccessKey=KE5yaclStCyBJz84DafoeJdAp1WlXilMi+AEhPDWKyw=";
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="Endpoint=sb://certaconmsfileuploadprod.servicebus.windows.net/;SharedAccessKeyName=SendReceiveOnly;SharedAccessKey=/EGltUOU9EG9HD9S8yauegZbuL+H7vUdi+AEhBtRYLE=";
       sasl.mechanism: PLAIN
       security.protocol: SASL_SSL
-    producer:
-      value-serializer: br.com.certacon.certabotloadfiles.kafka.producer.ProducerMessageSerializer
     consumer:
       auto-offset-reset: earliest
       group-id: $Default
@@ -48,14 +47,11 @@ spring:
 topic:
   uploadcertabot: topic-upload-certabot
 
-  datasource:
-    url: jdbc:sqlserver://192.168.0.27;databaseName=LoadFileDev;encrypt=false;integratedSecurity=false;
-    username: giovanni.andrade
-    password: gigi1704
+
 
 config:
   downloadPath: /home/selenium/Downloads
   archivedFilesDir: /tmp/ARQUIVADOS/
   sentFilesDir: /tmp/ENVIADOS/
   rootDir: /tmp/
-  restBuilder: http://192.168.0.26:9154/CertaBotOrganize
+  restBuilder: http://192.168.0.39:9154/CertaBotOrganize

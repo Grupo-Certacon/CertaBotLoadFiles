@@ -8,9 +8,12 @@ import lombok.*;
 @Setter
 @Builder
 public class FileVO {
+
     private String fileName;
     private String filePath;
     private String ipServer;
     private String cnpj;
     private String companyName;
+    private String originalFile;
+
 }

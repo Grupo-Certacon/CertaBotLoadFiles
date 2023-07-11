@@ -36,6 +36,7 @@ public class PostRestTemplateSchedule {
                             .ipServer(modelList.get(i).getIpServer())
                             .fileName(modelList.get(i).getFileName())
                             .filePath(modelList.get(i).getPath())
+                            .originalFile(modelList.get(i).getOriginalName())
                             .build();
                     FileEntityVO result = postRestTemplateService.createFile(fileVO).getBody();
                     if (result != null) {

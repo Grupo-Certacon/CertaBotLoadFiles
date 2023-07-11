@@ -16,6 +16,7 @@ import java.util.UUID;
 @Setter
 @Builder
 public class UserFilesModel {
+
     @Id
     @GenericGenerator(name = "UUIDGenerator", strategy = "uuid2")
     @GeneratedValue(generator = "UUIDGenerator")
@@ -26,6 +27,10 @@ public class UserFilesModel {
     @Column(name = "nome_arquivo")
     @JsonProperty(value = "nome_arquivo")
     private String fileName;
+
+    @Column(name = "nome_arquivo_original")
+    @JsonProperty(value = "nome_arquivo_original")
+    private String originalName;
 
     @Column(name = "status")
     @JsonProperty(value = "status")
@@ -61,4 +66,5 @@ public class UserFilesModel {
     @Column(name = "nome_empresa", nullable = false)
     @JsonProperty(value = "nome_empresa")
     private String companyName;
+
 }
